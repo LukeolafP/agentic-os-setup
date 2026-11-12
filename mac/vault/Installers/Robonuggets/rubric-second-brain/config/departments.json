@@ -1,0 +1,112 @@
+{
+  "_note": "Luke's four departments (15 Oct 2026). pathRules run top to bottom and win over everything else, so the specific exceptions come first. A department is a label on the map; no note moves.",
+  "departments": [
+    {
+      "key": "brand",
+      "label": "Brand",
+      "color": "#ff3d71",
+      "icon": "visual"
+    },
+    {
+      "key": "content",
+      "label": "Content",
+      "color": "#2196f3",
+      "icon": "pen"
+    },
+    {
+      "key": "scripting",
+      "label": "Scripting",
+      "color": "#fdd835",
+      "icon": "book"
+    },
+    {
+      "key": "memory",
+      "label": "Memory",
+      "color": "#e040fb",
+      "icon": "build"
+    },
+    {
+      "key": "gtd",
+      "label": "GTD",
+      "color": "#00c853",
+      "icon": "people"
+    },
+    {
+      "key": "luke",
+      "label": "Luke",
+      "color": "#ff9100",
+      "icon": "coin"
+    }
+  ],
+  "layers": [
+    {
+      "key": "A",
+      "label": "Applications",
+      "color": "#3f8fd4",
+      "shape": "hex",
+      "blurb": "MCP servers, connectors and APIs Claude can reach"
+    },
+    {
+      "key": "R",
+      "label": "Routines",
+      "color": "#d99a1f",
+      "shape": "ringdot",
+      "blurb": "Scheduled jobs and hooks that run without being asked"
+    },
+    {
+      "key": "M",
+      "label": "Memory",
+      "color": "#9a66e0",
+      "shape": "chip",
+      "blurb": "Every note in the vault, clustered by department"
+    },
+    {
+      "key": "S",
+      "label": "Skills",
+      "color": "#ff6b1a",
+      "shape": "diamond",
+      "blurb": "The skills snapshot kept in the vault"
+    }
+  ],
+  "projectPrefixes": {},
+  "pathRules": [
+    {
+      "prefix": "Brand/",
+      "dept": "brand"
+    },
+    {
+      "prefix": "Memory/Call To Actions/",
+      "dept": "content"
+    },
+    {
+      "prefix": "Memory/Writing Instagram ",
+      "dept": "scripting"
+    },
+    {
+      "prefix": "Memory/Automations/Instagram Script Writing.md",
+      "dept": "scripting"
+    },
+    {
+      "prefix": "GTD/",
+      "dept": "gtd"
+    },
+    {
+      "prefix": "Luke/",
+      "dept": "luke"
+    },
+    {
+      "prefix": "Memory/",
+      "dept": "memory"
+    },
+    {
+      "prefix": "Content/",
+      "dept": "content"
+    },
+    {
+      "prefix": "Dashboards/",
+      "dept": "content"
+    }
+  ],
+  "memoryKeywords": [],
+  "default": "memory"
+}

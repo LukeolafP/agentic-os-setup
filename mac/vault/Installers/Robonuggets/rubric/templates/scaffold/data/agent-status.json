@@ -1,0 +1,42 @@
+{
+  "gtd-vault": {
+    "status": "active",
+    "task": "Write me a folder with claude md and setup including all code required…",
+    "updatedAt": 1792713298215
+  },
+  "case-study-logos": {
+    "status": "idle",
+    "task": "done: Run across every client case study in the Google Drive folder GTD Context / Case Studies (folder id 1OrL5LaPQ4V5iV",
+    "updatedAt": 1792089367998
+  },
+  "hook-analyst": {
+    "status": "idle",
+    "task": "done: Month: October 2026. Read the Instagram analytics notes for October 2026 and rank every reel by completion, by sha",
+    "updatedAt": 1792091576449
+  },
+  "script-reviewer": {
+    "status": "idle",
+    "task": "done: Date range: 16 to 31 October 2026. Review every Instagram script in that range against the Writing Instagram Conte",
+    "updatedAt": 1792091992675
+  },
+  "cta-auditor": {
+    "status": "idle",
+    "task": "done: Scope: every October 2026 Instagram script. Check each script's CTA keyword against the Call To Actions notes and ",
+    "updatedAt": 1792092161217
+  },
+  "brand-checker": {
+    "status": "idle",
+    "task": "done: Read the full brand guideline PDF in the Brand folder and give all three checklists: the rules a script, a caption",
+    "updatedAt": 1792092167521
+  },
+  "team-capacity": {
+    "status": "idle",
+    "task": "done: Work out how many reels and how many long-form videos the video team can finish per week from the latest Efficienc",
+    "updatedAt": 1792092430052
+  },
+  "scorecard-tracker": {
+    "status": "idle",
+    "task": "done: Read Luke's Organic Growth Manager Scorecard and Responsibilities notes and list every target with what the vault ",
+    "updatedAt": 1792092376823
+  }
+}

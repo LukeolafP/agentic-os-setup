@@ -1,0 +1,10 @@
+{
+  "_note": "Everything that runs without being asked, as of 15 Oct 2026: two launchd jobs, one cloud routine (paused) and the two Claude Code hooks in .claude/settings.json.",
+  "routines": [
+    { "id": "rt:ig-vault-sync", "label": "IG Vault Sync", "schedule": "daily 06:15", "runner": "local", "access": "claude", "desc": "launchd: transcribes new reels into Content/Instagram/Scripts, refreshes 30 days of analytics, rebuilds the indexes", "links": ["Memory/Automations/Instagram Vault Sync.md", "app:instagram"] },
+    { "id": "rt:ig-token-refresh", "label": "IG Token Refresh", "schedule": "every 7 days", "runner": "local", "access": "claude", "desc": "launchd: refreshes the Instagram long-lived token so the API registry stays authenticated", "links": ["app:instagram"] },
+    { "id": "rt:weekly-content-slack", "label": "Weekly Content Post", "schedule": "Mon 09:00 CT (paused)", "runner": "cloud", "access": "claude", "desc": "Cloud routine: posts the week's content schedule to #daily-updates. Paused 13 Oct 2026.", "links": ["Memory/Automations/Weekly Content Slack Post.md", "app:slack", "app:notion"] },
+    { "id": "rt:session-load", "label": "Session Load", "schedule": "every session start", "runner": "hook", "access": "claude", "desc": "SessionStart hook: loads every automation note and the chat index", "links": ["CLAUDE.md"] },
+    { "id": "rt:chat-log", "label": "Chat Logging", "schedule": "every prompt", "runner": "hook", "access": "claude", "desc": "UserPromptSubmit hook: appends the prompt to Memory/Chats/.raw before Claude sees it", "links": ["Memory/Automations/Chat Logging.md"] }
+  ]
+}

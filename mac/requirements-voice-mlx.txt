@@ -1,0 +1,7 @@
+# Petra's voice on Apple Silicon (installed into ~/Coding/jarvis/.tts-venv)
+# Voxtral 4B TTS (mlx-community/Voxtral-4B-TTS-2603-mlx-4bit) and Parakeet TDT 0.6B v2 speech-to-text,
+# both downloaded from Hugging Face the first time they are used.
+mlx-audio==0.5.9
+mistral-common[audio]
+soundfile
+numpy

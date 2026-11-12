@@ -1,0 +1,65 @@
+{
+  "brandName": "GTD Console",
+  "agents": [
+    {
+      "id": "gtd-vault",
+      "name": "Petra · GTD Vault",
+      "color": "#ff6b1a",
+      "icon": "Crown"
+    },
+    {
+      "id": "ig-vault-sync",
+      "name": "IG Vault Sync",
+      "color": "#58abf5",
+      "icon": "Echo"
+    },
+    {
+      "id": "weekly-content-post",
+      "name": "Weekly Content Post",
+      "color": "#b47aff",
+      "icon": "Drift"
+    },
+    {
+      "id": "case-study-logos",
+      "name": "Case Study Logos",
+      "color": "#ff3d71",
+      "icon": "Halo"
+    },
+    {
+      "id": "hook-analyst",
+      "name": "Hook Analyst",
+      "color": "#2196f3",
+      "icon": "Sentinel"
+    },
+    {
+      "id": "script-reviewer",
+      "name": "Script Reviewer",
+      "color": "#fdd835",
+      "icon": "Sage"
+    },
+    {
+      "id": "cta-auditor",
+      "name": "CTA Auditor",
+      "color": "#2196f3",
+      "icon": "Warden"
+    },
+    {
+      "id": "brand-checker",
+      "name": "Brand Checker",
+      "color": "#ff3d71",
+      "icon": "Halo"
+    },
+    {
+      "id": "team-capacity",
+      "name": "Team Capacity",
+      "color": "#00c853",
+      "icon": "Fortress"
+    },
+    {
+      "id": "scorecard-tracker",
+      "name": "Scorecard Tracker",
+      "color": "#ff9100",
+      "icon": "Crown"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__VAULT__/.claude/hooks/session-load.sh",
+            "statusMessage": "Loading automations and chat index..."
+          },
+          {
+            "type": "command",
+            "command": "__VAULT__/.claude/hooks/rubric-status.sh idle 'session started'"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__VAULT__/.claude/hooks/chat-log.sh",
+            "statusMessage": "Logging chat..."
+          },
+          {
+            "type": "command",
+            "command": "__VAULT__/.claude/hooks/rubric-status.sh active 'working'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__VAULT__/.claude/hooks/rubric-status.sh idle 'finished a turn'"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__VAULT__/.claude/hooks/rubric-status.sh idle 'session ended'"
+          }
+        ]
+      }
+    ]
+  }
+}

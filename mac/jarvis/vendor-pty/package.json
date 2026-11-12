@@ -1,0 +1,8 @@
+{
+  "name": "jarvis-vendor-pty",
+  "private": true,
+  "description": "node-pty for the GTD Claude Code terminal (bridge/term.mjs), kept apart from the main lockfile",
+  "dependencies": {
+    "node-pty": "^1.1.0"
+  }
+}

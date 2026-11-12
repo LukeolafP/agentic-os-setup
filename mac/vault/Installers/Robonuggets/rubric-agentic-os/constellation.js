@@ -1,0 +1,411 @@
+/* ================================================================
+   The agent constellation: the centre of the OS tab (GTD, 15 Oct 2026)
+
+   Replaces the decorative orb. Petra, the main agent, sits in the centre. Every
+   agent in Agents/ (linked as .claude/agents) sits on the outer ring, in its department's arc and
+   colour. When an agent is called, a copy of it flies in from the ring and orbits
+   whoever called it, with a line showing the call and particles flowing from caller
+   to callee. Called twice, it shows twice. Agents an agent calls orbit that agent.
+   Small dots around a working agent are the files it has touched.
+
+   Click Petra to talk. Click an agent (on the ring or in flight) to open the Second
+   Brain on that agent and every file its copies have read or changed.
+
+   Data: 'gtd-activity' snapshots from the bridge, forwarded by jarvis.js.
+   Geometry: the dashboard's orbCX / orbCY / RINGpx, so moving or resizing the ring
+   in edit mode moves this with it.
+   ================================================================ */
+(function () {
+  'use strict';
+  if (typeof orbCX !== 'function') return;
+
+  // the six departments, as on the Second Brain map; ring order clockwise from the top
+  const DEPTS = [
+    { key: 'Content', color: '#2196f3' }, { key: 'Scripting', color: '#fdd835' },
+    { key: 'Brand', color: '#ff3d71' }, { key: 'Luke', color: '#ff9100' },
+    { key: 'GTD', color: '#00c853' }, { key: 'Memory', color: '#e040fb' },
+  ];
+  const ACCENT = '#1A8CF6';
+
+  const cv = document.createElement('canvas');
+  cv.id = 'agCv';
+  document.body.appendChild(cv);
+  const ctx = cv.getContext('2d');
+  const tip = document.createElement('div');
+  tip.id = 'agTip';
+  document.body.appendChild(tip);
+
+  let W = 0, H = 0;
+  function resize() {
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  addEventListener('resize', resize);
+
+  /* ------------------------------------------------------------ data */
+  let data = { petra: { status: 'idle', files: [] }, instances: [], agents: [] };
+  const vis = new Map();            // iid -> on-screen state for each live copy
+  let focusAgent = null;            // agent id the Second Brain is showing
+
+  addEventListener('gtd-activity', e => {
+    data = e.detail || data;
+    /* a new copy, or one reusing an id the ring already faded out (a manager id after a bridge
+       restart): either way it starts fresh (GTD 2 Nov 2026) */
+    for (const i of data.instances) { const v = vis.get(i.iid); if (!v || v.created !== i.created) spawn(i); }
+    if (focusAgent && typeof brainOpen !== 'undefined' && brainOpen) sendFocus(false);
+  });
+
+  const geo = () => ({ x: orbCX(), y: orbCY(), R: RINGpx() });
+  const deptIndex = d => { const i = DEPTS.findIndex(x => x.key.toLowerCase() === String(d || '').toLowerCase()); return i < 0 ? 5 : i; };
+  const SPAN = Math.PI * 2 / DEPTS.length;
+  const deptStart = i => -Math.PI / 2 - SPAN / 2 + i * SPAN;
+
+  function homeOf(agentId) {
+    const a = data.agents.find(x => x.id === agentId);
+    if (!a) return null;
+    const di = deptIndex(a.department);
+    const same = data.agents.filter(x => deptIndex(x.department) === di);
+    const k = same.indexOf(a);
+    const ang = deptStart(di) + SPAN * (k + 1) / (same.length + 1);
+    const { x, y, R } = geo();
+    return { x: x + Math.cos(ang) * R * .8, y: y + Math.sin(ang) * R * .8, ang };
+  }
+  function spawn(inst) {
+    const parent = vis.get(inst.parent);
+    const home = homeOf(inst.agent);
+    const g = geo();
+    const from = home || (parent ? { x: parent.x, y: parent.y } : { x: g.x, y: g.y });
+    vis.set(inst.iid, { x: from.x, y: from.y, a: 0, born: performance.now(), gone: 0, created: inst.created });
+  }
+
+  /* where every live copy wants to be: Petra's callees on an inner orbit, everyone
+     else's callees fanned out around their caller */
+  function layout(t) {
+    const { x, y, R } = geo();
+    const live = data.instances;
+    const ids = new Set(live.map(i => i.iid));
+    const roots = live.filter(i => i.parent === 'petra' || !ids.has(i.parent)).sort((a, b) => a.created - b.created);
+    const targets = new Map();
+    const orbit = R * .42, spin = t * .035;
+    roots.forEach((i, k) => {
+      const ang = -Math.PI / 2 + (k / Math.max(1, roots.length)) * Math.PI * 2 + spin;
+      targets.set(i.iid, { x: x + Math.cos(ang) * orbit, y: y + Math.sin(ang) * orbit, ang });
+    });
+    // breadth-first so a callee always places after its caller
+    let frontier = roots;
+    for (let depth = 0; depth < 5 && frontier.length; depth++) {
+      const next = [];
+      for (const p of frontier) {
+        const kids = live.filter(i => i.parent === p.iid).sort((a, b) => a.created - b.created);
+        const pt = targets.get(p.iid); if (!pt) continue;
+        // far enough out that a callee never sits on its caller's label
+        const r = Math.max(70, R * (.24 - depth * .03)), fan = Math.min(Math.PI * .9, .6 * kids.length);
+        kids.forEach((c, k) => {
+          const ang = pt.ang + (kids.length > 1 ? -fan / 2 + fan * k / (kids.length - 1) : 0);
+          targets.set(c.iid, { x: pt.x + Math.cos(ang) * r, y: pt.y + Math.sin(ang) * r, ang });
+        });
+        next.push(...kids);
+      }
+      frontier = next;
+    }
+    return targets;
+  }
+
+  /* ------------------------------------------------------------ draw */
+  const now = () => performance.now();
+  let hover = null;
+  function frame(tms) {
+    const t = tms / 1000;
+    ctx.clearRect(0, 0, W, H);
+    const g = geo();
+    const lv = window.__jarvis ? window.__jarvis.level() : { phase: 'idle', env: 0, mic: 0, online: false };
+    const targets = layout(t);
+
+    // ease every copy toward its target; finished ones go home and fade
+    const live = new Map(data.instances.map(i => [i.iid, i]));
+    for (const [iid, v] of vis) {
+      const inst = live.get(iid);
+      if (!inst) { v.gone = Math.min(1, v.gone + .03); if (v.gone >= 1) vis.delete(iid); continue; }
+      let tg = targets.get(iid);
+      const done = inst.status === 'done' || inst.status === 'failed';
+      if (!done) v.gone = 0;            /* woken again (a manager handed a new message): show it again */
+      if (done && inst.ended && Date.now() - inst.ended > 6000) {
+        tg = homeOf(inst.agent) || { x: g.x, y: g.y };
+        v.gone = Math.min(1, v.gone + .012);
+      }
+      if (tg) { v.x += (tg.x - v.x) * .07; v.y += (tg.y - v.y) * .07; }
+      v.a = Math.min(1, v.a + .05) * (1 - v.gone);
+    }
+
+    drawRing(g, t);
+    // calls: caller -> callee
+    for (const inst of data.instances) {
+      const v = vis.get(inst.iid); if (!v || v.a < .02) continue;
+      const p = inst.parent === 'petra' ? { x: g.x, y: g.y } : vis.get(inst.parent);
+      if (!p) continue;
+      drawCall(p, v, inst, t);
+    }
+    for (const inst of data.instances) {
+      const v = vis.get(inst.iid); if (!v || v.a < .02) continue;
+      drawCopy(v, inst, t);
+    }
+    drawPetra(g, lv, t);
+    requestAnimationFrame(frame);
+  }
+
+  function drawRing(g, t) {
+    const { x, y, R } = g;
+    const r = R * .8;
+    ctx.save();
+    DEPTS.forEach((d, i) => {
+      const a0 = deptStart(i) + .05, a1 = deptStart(i) + SPAN - .05;
+      ctx.beginPath(); ctx.arc(x, y, r, a0, a1);
+      ctx.strokeStyle = d.color; ctx.globalAlpha = .22; ctx.lineWidth = 2; ctx.stroke();
+      // department label just inside the arc
+      const am = (a0 + a1) / 2, lr = r - 22;
+      ctx.globalAlpha = .55; ctx.fillStyle = d.color;
+      ctx.font = '700 10px "Trajan Pro", serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.save(); ctx.translate(x + Math.cos(am) * lr, y + Math.sin(am) * lr);
+      let rot = am + Math.PI / 2; if (Math.sin(am) > 0) rot += Math.PI;
+      ctx.rotate(rot); ctx.fillText(d.key.toUpperCase().split('').join(' '), 0, 0); ctx.restore();
+    });
+    ctx.restore();
+    // the agents themselves, at home on the ring
+    for (const a of data.agents) {
+      const h = homeOf(a.id); if (!h) continue;
+      const busy = data.instances.some(i => i.agent === a.id && (i.status === 'running' || i.status === 'queued'));
+      const hot = hover && hover.kind === 'agent' && hover.id === a.id;
+      ctx.save();
+      if (busy) { ctx.globalAlpha = .35 + .25 * Math.sin(t * 4); ctx.beginPath(); ctx.arc(h.x, h.y, 15, 0, 7); ctx.strokeStyle = a.color; ctx.lineWidth = 2; ctx.stroke(); }
+      ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.arc(h.x, h.y, hot ? 11 : 9, 0, 7);
+      ctx.fillStyle = '#0F1C45'; ctx.fill();
+      ctx.strokeStyle = a.color; ctx.lineWidth = 2; ctx.stroke();
+      ctx.beginPath(); ctx.arc(h.x, h.y, 3.5, 0, 7); ctx.fillStyle = a.color; ctx.fill();
+      ctx.font = '600 10px "Proxima Nova", sans-serif'; ctx.fillStyle = '#F5F8FF'; ctx.globalAlpha = .85;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      const ox = Math.cos(h.ang) * 20, oy = Math.sin(h.ang) * 20;
+      ctx.fillText(a.name, h.x + ox, h.y + oy + (Math.sin(h.ang) > 0 ? 2 : -12));
+      ctx.restore();
+    }
+  }
+
+  function drawCall(p, v, inst, t) {
+    const running = inst.status === 'running' || inst.status === 'queued';
+    const mx = (p.x + v.x) / 2, my = (p.y + v.y) / 2;
+    const dx = v.x - p.x, dy = v.y - p.y, len = Math.hypot(dx, dy) || 1;
+    const cx = mx - dy / len * len * .18, cy = my + dx / len * len * .18;
+    ctx.save();
+    ctx.globalAlpha = v.a * (running ? .55 : .22);
+    ctx.strokeStyle = inst.color; ctx.lineWidth = running ? 1.6 : 1;
+    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.quadraticCurveTo(cx, cy, v.x, v.y); ctx.stroke();
+    if (running) {
+      for (let k = 0; k < 3; k++) {
+        const u = ((t * .55) + k / 3) % 1, iu = 1 - u;
+        const px = iu * iu * p.x + 2 * iu * u * cx + u * u * v.x, py = iu * iu * p.y + 2 * iu * u * cy + u * u * v.y;
+        ctx.globalAlpha = v.a * .9; ctx.fillStyle = inst.color;
+        ctx.beginPath(); ctx.arc(px, py, 2.4, 0, 7); ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawCopy(v, inst, t) {
+    const r = 14;
+    const hot = hover && hover.kind === 'copy' && hover.agent === inst.agent;
+    ctx.save();
+    ctx.globalAlpha = v.a;
+    // files touched: small dots on a slow orbit
+    const files = inst.files || [];
+    const nf = Math.min(16, files.length);
+    for (let k = 0; k < nf; k++) {
+      const ang = t * .4 + k / nf * Math.PI * 2;
+      const f = files[files.length - 1 - k];
+      ctx.beginPath(); ctx.arc(v.x + Math.cos(ang) * (r + 9), v.y + Math.sin(ang) * (r + 9), f.op === 'read' ? 1.6 : 2.4, 0, 7);
+      ctx.fillStyle = f.op === 'read' ? 'rgba(214,224,255,.55)' : inst.color; ctx.fill();
+    }
+    if (hot) { ctx.beginPath(); ctx.arc(v.x, v.y, r + 5, 0, 7); ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fill(); }
+    ctx.beginPath(); ctx.arc(v.x, v.y, r, 0, 7);
+    ctx.fillStyle = '#0F1C45'; ctx.fill();
+    ctx.strokeStyle = inst.color; ctx.lineWidth = 2; ctx.stroke();
+    if (inst.status === 'running') {
+      ctx.beginPath(); ctx.arc(v.x, v.y, r + 4, t * 3, t * 3 + 1.4);
+      ctx.strokeStyle = inst.color; ctx.lineWidth = 2; ctx.stroke();
+      ctx.beginPath(); ctx.arc(v.x, v.y, 4.5, 0, 7); ctx.fillStyle = inst.color; ctx.fill();
+    } else if (inst.status === 'queued') {
+      ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.arc(v.x, v.y, r + 4, 0, 7); ctx.strokeStyle = inst.color; ctx.lineWidth = 1.2; ctx.stroke(); ctx.setLineDash([]);
+    } else if (inst.status === 'done') {
+      ctx.strokeStyle = '#7DA0FF'; ctx.lineWidth = 2.4; ctx.beginPath();
+      ctx.moveTo(v.x - 5, v.y); ctx.lineTo(v.x - 1, v.y + 4); ctx.lineTo(v.x + 6, v.y - 4); ctx.stroke();
+    } else {
+      ctx.strokeStyle = '#ff5a5a'; ctx.lineWidth = 2.2; ctx.beginPath();
+      ctx.moveTo(v.x - 4, v.y - 4); ctx.lineTo(v.x + 4, v.y + 4); ctx.moveTo(v.x + 4, v.y - 4); ctx.lineTo(v.x - 4, v.y + 4); ctx.stroke();
+    }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.font = '600 10.5px "Proxima Nova", sans-serif'; ctx.fillStyle = '#F5F8FF';
+    ctx.fillText(inst.name, v.x, v.y + r + 8);
+    if (inst.label) {
+      ctx.font = '400 9px "Proxima Nova", sans-serif'; ctx.fillStyle = 'rgba(214,224,255,.5)';
+      const s = inst.label.length > 34 ? inst.label.slice(0, 33) + '…' : inst.label;
+      ctx.fillText(s, v.x, v.y + r + 21);
+    }
+    ctx.restore();
+  }
+
+  function drawPetra(g, lv, t) {
+    const { x, y, R } = g;
+    const rp = Math.max(28, R * .115);
+    const env = lv.phase === 'listening' ? lv.mic : lv.env;
+    ctx.save();
+    // aura: rings that breathe with whoever is talking
+    for (let k = 3; k >= 1; k--) {
+      const rr = rp * (1.15 + k * .22 + env * .55 * k / 3) + Math.sin(t * 1.4 + k) * 2;
+      ctx.beginPath(); ctx.arc(x, y, rr, 0, 7);
+      ctx.strokeStyle = lv.phase === 'listening' ? ACCENT : 'rgba(190,210,255,1)';
+      ctx.globalAlpha = (.08 + env * .25) / k; ctx.lineWidth = 2; ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    // flat Electric Blue disc with a white hairline (Luke, 19 Oct 2026): no shading
+    // that makes it read as a sphere, and no glow. The breathing rings above carry the voice.
+    ctx.beginPath(); ctx.arc(x, y, rp * (1 + env * .06), 0, 7); ctx.fillStyle = '#3164F5'; ctx.fill();
+    ctx.beginPath(); ctx.arc(x, y, rp * (1 + env * .06) - 4, 0, 7);
+    ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 1.5; ctx.stroke();
+    if (lv.phase === 'thinking' || lv.phase === 'transcribing' || data.petra.status === 'thinking') {
+      ctx.beginPath(); ctx.arc(x, y, rp + 7, t * 2.6, t * 2.6 + 1.8);
+      ctx.strokeStyle = '#fff'; ctx.globalAlpha = .7; ctx.lineWidth = 2; ctx.stroke(); ctx.globalAlpha = 1;
+    }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.font = '700 14px "Trajan Pro", serif'; ctx.fillStyle = '#F5F8FF';
+    ctx.fillText('P E T R A', x, y + rp + 14);
+    const word = !lv.online ? 'OFFLINE' : { listening: 'LISTENING', transcribing: 'HEARING YOU', thinking: 'THINKING', speaking: 'SPEAKING' }[lv.phase]
+      || (data.instances.some(i => i.status === 'running') ? data.instances.filter(i => i.status === 'running').length + ' AGENTS WORKING' : 'TALK OR TYPE');
+    ctx.font = '600 8.5px "Proxima Nova", sans-serif'; ctx.fillStyle = lv.online ? ACCENT : 'rgba(214,224,255,.4)';
+    ctx.fillText(word.split('').join(' '), x, y + rp + 30);
+    ctx.restore();
+  }
+
+  /* ---------------------------------------------------------- input */
+  function hitTest(px, py) {
+    const g = geo();
+    const rp = Math.max(28, g.R * .115);
+    if (Math.hypot(px - g.x, py - g.y) < rp + 6) return { kind: 'petra' };
+    for (const inst of [...data.instances].reverse()) {
+      const v = vis.get(inst.iid); if (!v || v.a < .3) continue;
+      if (Math.hypot(px - v.x, py - v.y) < 20) return { kind: 'copy', agent: inst.agent, inst };
+    }
+    for (const a of data.agents) {
+      const h = homeOf(a.id);
+      if (h && Math.hypot(px - h.x, py - h.y) < 16) return { kind: 'agent', id: a.id, agent: a };
+    }
+    return null;
+  }
+  const blocked = () => (typeof brainOpen !== 'undefined' && brainOpen) || document.body.classList.contains('edit');
+  cv.addEventListener('pointermove', e => {
+    if (blocked()) { hover = null; tip.classList.remove('show'); cv.style.cursor = ''; return; }
+    hover = hitTest(e.clientX, e.clientY);
+    cv.style.cursor = hover ? 'pointer' : '';
+    if (!hover) { tip.classList.remove('show'); return; }
+    let html = '';
+    if (hover.kind === 'petra') html = '<b>Petra</b><span>The main agent. Click to talk.</span>';
+    else {
+      const id = hover.kind === 'copy' ? hover.agent : hover.id;
+      const copies = data.instances.filter(i => i.agent === id);
+      const name = hover.kind === 'copy' ? hover.inst.name : hover.agent.name;
+      const files = new Set(copies.flatMap(i => (i.files || []).map(f => f.path)));
+      const running = copies.filter(i => i.status === 'running').length;
+      html = `<b>${esc(name)}</b><span>${copies.length ? `${copies.length} ${copies.length > 1 ? 'copies' : 'copy'}${running ? `, ${running} working` : ''} · ${files.size} files` : 'Idle'}</span>`
+        + (hover.kind === 'copy' && hover.inst.label ? `<em>${esc(hover.inst.label)}</em>` : '')
+        + '<i>Click to open in the Second Brain</i>';
+    }
+    tip.innerHTML = html;
+    tip.style.left = (e.clientX + 14) + 'px'; tip.style.top = (e.clientY + 14) + 'px';
+    tip.classList.add('show');
+  });
+  cv.addEventListener('pointerleave', () => { hover = null; tip.classList.remove('show'); });
+  cv.addEventListener('pointerdown', e => {
+    if (blocked()) return;
+    const h = hitTest(e.clientX, e.clientY);
+    if (!h) return;                                   // empty space: the board's own handling
+    e.stopPropagation(); e.preventDefault();
+    tip.classList.remove('show');
+    if (h.kind === 'petra') { petraClick(); return; }
+    // chat open: a working copy opens its own chat beside a floating Second Brain
+    if (window.osChat && window.osChat.isOpen()) {
+      if (h.kind === 'copy') window.osChat.openSub(h.inst.iid);
+      else if (window.osBrainFloat) window.osBrainFloat(h.id);
+      return;
+    }
+    openFocus(h.kind === 'copy' ? h.agent : h.id);
+  });
+  /* GTD (20 Oct 2026): clicking Petra asks how - talk (the microphone) or type (the chat).
+     While she is listening a click still stops her; with the chat open it goes to the chat. */
+  const pick = document.createElement('div');
+  pick.id = 'petraPick';
+  pick.innerHTML = `<button data-k="talk" title="Talk to Petra"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a3.5 3.5 0 0 1 3.5 3.5v6a3.5 3.5 0 0 1-7 0V6A3.5 3.5 0 0 1 12 2.5z"/><path d="M5.5 11a1 1 0 0 1 1 1 5.5 5.5 0 0 0 11 0 1 1 0 1 1 2 0 7.5 7.5 0 0 1-6.5 7.43V21a1 1 0 1 1-2 0v-1.57A7.5 7.5 0 0 1 4.5 12a1 1 0 0 1 1-1z"/></svg><span>Talk</span></button>
+    <button data-k="type" title="Type to Petra"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 5h15A2.5 2.5 0 0 1 22 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 16.5v-9A2.5 2.5 0 0 1 4.5 5zM6 8.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM6 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm12 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM9 12.2a.8.8 0 0 0 0 1.6h6a.8.8 0 0 0 0-1.6z" fill-rule="evenodd"/></svg><span>Type</span></button>`;
+  document.body.appendChild(pick);
+  const hidePick = () => pick.classList.remove('show');
+  pick.addEventListener('pointerdown', e => e.stopPropagation());
+  pick.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    hidePick();
+    if (b.dataset.k === 'talk') window.__jarvis && window.__jarvis.toggleTalk();
+    else window.osChat && window.osChat.open();
+  });
+  addEventListener('pointerdown', e => { if (!pick.contains(e.target)) hidePick(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape') hidePick(); });
+  function petraClick() {
+    const j = window.__jarvis;
+    if (j && j.phase === 'listening') return j.toggleTalk();
+    if (window.osChat && window.osChat.isOpen()) return window.osChat.focus();
+    if (pick.classList.contains('show')) return hidePick();
+    const g = geo(), rp = Math.max(28, g.R * .115);
+    pick.style.left = g.x + 'px'; pick.style.top = g.y + 'px';
+    pick.style.setProperty('--gap', (rp + 18) + 'px');
+    pick.classList.add('show');
+  }
+
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* --------------------------------------- the Second Brain, focused */
+  function focusPayload(agentId) {
+    const copies = data.instances.filter(i => i.agent === agentId);
+    const a = data.agents.find(x => x.id === agentId) || copies[0] || { name: agentId, color: '#8FA6DF' };
+    const files = [];
+    const seen = new Set();
+    for (const c of copies) for (const f of c.files || []) if (!seen.has(f.path)) { seen.add(f.path); files.push(f); }
+    return { type: 'rubric-os:focus', agent: { id: agentId, name: a.name, color: a.color },
+      copies: copies.length, tasks: copies.map(c => c.label).filter(Boolean).slice(0, 5), files };
+  }
+  let ackd = false, retry = null;
+  function sendFocus(withRetry) {
+    if (!focusAgent) return;
+    const fr = document.getElementById('brainFrame');
+    const post = () => { try { fr.contentWindow.postMessage(focusPayload(focusAgent), BRAIN_ORIGIN); } catch {} };
+    post();
+    if (!withRetry) return;
+    ackd = false; clearInterval(retry);
+    let n = 0;
+    retry = setInterval(() => { if (ackd || ++n > 24) return clearInterval(retry); post(); }, 500);
+  }
+  /* focus the Second Brain on an agent without opening it (the floating brain does that) */
+  function focusOnly(agentId) { focusAgent = agentId; sendFocus(true); }
+  function openFocus(agentId) {
+    focusAgent = agentId;
+    if (typeof openSecondBrain === 'function') openSecondBrain(1);
+    sendFocus(true);
+  }
+  addEventListener('message', e => {
+    if (typeof BRAIN_ORIGIN !== 'undefined' && e.origin === BRAIN_ORIGIN && e.data && e.data.type === 'rubric-os:focused') ackd = true;
+  });
+  // stop following once the brain is closed
+  setInterval(() => { if (focusAgent && typeof brainOpen !== 'undefined' && !brainOpen && !window.__brainFloat && !(typeof portalBusy !== 'undefined' && portalBusy)) focusAgent = null; }, 1000);
+
+  requestAnimationFrame(frame);
+  window.__constellation = { get data() { return data; }, openFocus, focusOnly,
+    shown: () => [...vis].filter(([, v]) => v.a >= .02).map(([iid]) => iid) };   /* copies on screen now */
+})();

@@ -1,0 +1,8 @@
+.DS_Store
+node_modules/
+*.log
+**/.gtd-jobs/
+**/.tts-venv/
+**/.stt-venv/
+**/voice-memory.json
+**/state.json

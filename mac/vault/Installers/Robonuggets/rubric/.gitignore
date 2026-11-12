@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.log
+mockups/
+RUBRIC.md
+zips/
+LAUNCH-PLAN.md

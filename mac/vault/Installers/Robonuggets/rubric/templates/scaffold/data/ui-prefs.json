@@ -1,0 +1,11 @@
+{
+  "nav-tab-order": [
+    "welcome",
+    "agents",
+    "flows",
+    "skill-trees",
+    "crons",
+    "team",
+    "icons"
+  ]
+}

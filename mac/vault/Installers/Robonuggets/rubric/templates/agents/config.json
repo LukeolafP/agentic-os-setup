@@ -1,0 +1,75 @@
+{
+  "brandName": "GTD Agents",
+  "agents": [
+    {
+      "id": "gtd-vault",
+      "name": "Petra · GTD Vault",
+      "role": "The main agent: the voice you talk to, running Claude Code in the vault on Opus 5.5 high. Hands work to the other agents.",
+      "color": "#ff6b1a",
+      "icon": "Crown"
+    },
+    {
+      "id": "ig-vault-sync",
+      "name": "IG Vault Sync",
+      "role": "launchd job, daily 06:15. Transcribes reels and refreshes analytics into the vault.",
+      "color": "#58abf5",
+      "icon": "Echo"
+    },
+    {
+      "id": "weekly-content-post",
+      "name": "Weekly Content Post",
+      "role": "Cloud routine, Mondays 9:00 CT. Paused since 13 Oct 2026.",
+      "color": "#b47aff",
+      "icon": "Drift"
+    },
+    {
+      "id": "case-study-logos",
+      "name": "Case Study Logos",
+      "role": "Goes through every client case study in Google Drive (GTD Context / Case Studies), finds the highest quality logo for each client company, s",
+      "color": "#ff3d71",
+      "icon": "Halo"
+    },
+    {
+      "id": "hook-analyst",
+      "name": "Hook Analyst",
+      "role": "Reads the Instagram analytics notes for a given month and ranks that month's reels by completion, shares and saves, with the hook line of th",
+      "color": "#2196f3",
+      "icon": "Sentinel"
+    },
+    {
+      "id": "script-reviewer",
+      "name": "Script Reviewer",
+      "role": "Reviews the Instagram scripts in a given date range against the Writing Instagram Content rules, benchmarking hooks against the month's best",
+      "color": "#fdd835",
+      "icon": "Sage"
+    },
+    {
+      "id": "cta-auditor",
+      "name": "CTA Auditor",
+      "role": "Checks every Instagram script's CTA keyword against the Call To Actions notes and the CTA keyword map, and lists clashes and keywords that s",
+      "color": "#2196f3",
+      "icon": "Warden"
+    },
+    {
+      "id": "brand-checker",
+      "name": "Brand Checker",
+      "role": "Reads the brand guideline PDF in the Brand folder and lists the rules a script, caption or thumbnail must follow, as a checklist. Send it wo",
+      "color": "#ff3d71",
+      "icon": "Halo"
+    },
+    {
+      "id": "team-capacity",
+      "name": "Team Capacity",
+      "role": "Reads the video team's Efficiency snapshots and works out how many reels and long-form videos the team can finish per week. Send it work lik",
+      "color": "#00c853",
+      "icon": "Fortress"
+    },
+    {
+      "id": "scorecard-tracker",
+      "name": "Scorecard Tracker",
+      "role": "Reads Luke's Organic Growth Manager scorecard and responsibilities and lists every target with what the vault shows about progress on it. Se",
+      "color": "#ff9100",
+      "icon": "Crown"
+    }
+  ]
+}

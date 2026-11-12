@@ -1,0 +1,61 @@
+{
+  "_note": "Local apps the OS launcher can start and open as tabs. Each process is started only if its port is free, from its own folder, with its own logs in .app-logs/. Only what is listed here can ever be started. ~ means the home folder; {vault} means the Obsidian vault.",
+  "apps": [
+    {
+      "id": "organic-leads",
+      "name": "Organic Lead Tracking",
+      "desc": "Organic attribution, the daily snapshot and lead verification",
+      "procs": [
+        { "name": "server", "cwd": "{vault}/Dashboards", "cmd": ["~/.pyenv/versions/3.13.12/bin/python3", "serve.py"], "port": 8787 }
+      ],
+      "url": "http://127.0.0.1:8787/organic-leads.html#organic"
+    },
+    {
+      "id": "daily-metrics",
+      "name": "Daily Metrics",
+      "desc": "The daily snapshot tab of the lead tracker",
+      "procs": [
+        { "name": "server", "cwd": "{vault}/Dashboards", "cmd": ["~/.pyenv/versions/3.13.12/bin/python3", "serve.py"], "port": 8787 }
+      ],
+      "url": "http://127.0.0.1:8787/organic-leads.html#daily"
+    },
+    {
+      "id": "story-builder",
+      "name": "Story Builder",
+      "desc": "Write, match, render and file Instagram story sequences",
+      "procs": [
+        { "name": "backend", "cwd": "~/Coding/story-builder", "cmd": [".venv/bin/python", "run.py", "serve"], "port": 8010 },
+        { "name": "frontend", "cwd": "~/Coding/story-builder", "cmd": [".venv/bin/python", "run.py", "ui"], "port": 5273 }
+      ],
+      "url": "http://localhost:5273"
+    },
+    {
+      "id": "carousel-builder",
+      "name": "Carousel Builder",
+      "desc": "Content studio: carousels, photo matching, workflows, Drive assets",
+      "procs": [
+        { "name": "backend", "cwd": "~/Coding/carousel-builder", "cmd": [".venv/bin/python", "run.py", "serve-all"], "port": 8000 },
+        { "name": "frontend", "cwd": "~/Coding/carousel-builder/frontend", "cmd": ["npm", "run", "dev"], "port": 5173 }
+      ],
+      "url": "http://localhost:5173"
+    },
+    {
+      "id": "transcription",
+      "name": "Transcription Dashboard",
+      "desc": "Transcribe the Amrit Zoom recordings locally and combine them for case studies",
+      "procs": [
+        { "name": "server", "cwd": "~/Coding/transcription-dashboard", "cmd": ["./run.sh"], "port": 8765 }
+      ],
+      "url": "http://localhost:8765"
+    },
+    {
+      "id": "onboarding-form",
+      "name": "Onboarding Form",
+      "desc": "The client onboarding form, in development",
+      "procs": [
+        { "name": "frontend", "cwd": "~/Coding/onboarding-form", "cmd": ["npm", "run", "dev"], "port": 3000 }
+      ],
+      "url": "http://localhost:3000"
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "brandName": "GTD Team",
+  "mission": "Luke owns everything that happens after the video is finished, until a qualified lead appears.",
+  "serverLabel": "luke-macbook",
+  "skillsRoot": "__HOME__",
+  "lead": {
+    "id": "gtd-vault",
+    "name": "Petra · GTD Vault",
+    "badge": "Lead",
+    "role": "Main agent · Claude Code in the vault · Opus 5.5 high",
+    "description": "Petra is the agent Luke talks to, by voice on the OS or by text. She answers from the vault and queues the other agents for anything that takes longer.",
+    "skills": [
+      "Instagram scripting",
+      "Chat logging",
+      "Marketing numbers",
+      "Captions and emails",
+      "Motion graphics"
+    ],
+    "icon": "Crown",
+    "color": "#ff6b1a"
+  },
+  "agents": [
+    {
+      "id": "ig-vault-sync",
+      "name": "IG Vault Sync",
+      "role": "launchd job · daily 06:15",
+      "description": "Transcribes every reel posted in the last 2 days into Content/Instagram/Scripts, refreshes 30 days of analytics into Content/Instagram/Analytics, and rebuilds the indexes. One Opus call per new reel, for the title.",
+      "skills": [
+        "Transcription",
+        "Analytics",
+        "Index rebuild"
+      ],
+      "icon": "Echo",
+      "color": "#58abf5"
+    },
+    {
+      "id": "ig-token-refresh",
+      "name": "IG Token Refresh",
+      "role": "launchd job · every 7 days",
+      "description": "Refreshes the Instagram long-lived token so the API registry stays authenticated.",
+      "skills": [
+        "Auth upkeep"
+      ],
+      "icon": "Warden",
+      "color": "#30d158"
+    },
+    {
+      "id": "weekly-content-post",
+      "name": "Weekly Content Post",
+      "role": "Cloud routine · Mon 9:00 CT · paused",
+      "description": "Posts the week's content schedule to Slack #daily-updates from Notion and Drive. It cannot read the vault. Paused 13 Oct 2026.",
+      "skills": [
+        "Notion",
+        "Slack"
+      ],
+      "icon": "Drift",
+      "color": "#b47aff"
+    },
+    {
+      "id": "case-study-logos",
+      "name": "Case Study Logos",
+      "role": "Brand · client logos for case studies · sonnet-5 medium",
+      "description": "Goes through every client case study in Google Drive (GTD Context / Case Studies), finds the highest quality logo for each client company, saves the logo file beside the case study in Drive and places it at the top of the case study doc. Send it work like \"add logos to the case studies\", \"get the client logos\", or \"logo for the new case study\".",
+      "skills": [
+        "logos",
+        "case studies",
+        "Google Drive",
+        "Google Docs"
+      ],
+      "icon": "Halo",
+      "color": "#ff3d71"
+    },
+    {
+      "id": "hook-analyst",
+      "name": "Hook Analyst",
+      "role": "Content · ranks reels and hooks · sonnet-5 high",
+      "description": "Reads the Instagram analytics notes for a given month and ranks that month's reels by completion, shares and saves, with the hook line of the top five and bottom five. Send it work like \"rank October's reels\", \"which hooks held best last month\", or \"hook analysis for September\". Read only; it reports and never writes.",
+      "skills": [
+        "Instagram",
+        "Hooks",
+        "Reel ranking",
+        "Read only"
+      ],
+      "icon": "Sentinel",
+      "color": "#2196f3"
+    },
+    {
+      "id": "script-reviewer",
+      "name": "Script Reviewer",
+      "role": "Scripting · reviews scripts against the rules · sonnet-5 high",
+      "description": "Reviews the Instagram scripts in a given date range against the Writing Instagram Content rules, benchmarking hooks against the month's best performers from hook-analyst. Send it work like \"review the scripts from 1 to 15 November\", \"check this week's scripts against the rules\", or \"are October's scripts on voice\". Read only; it reports and never writes.",
+      "skills": [
+        "Scripts",
+        "Voice rules",
+        "Hook benchmark",
+        "Read only"
+      ],
+      "icon": "Sage",
+      "color": "#fdd835"
+    },
+    {
+      "id": "cta-auditor",
+      "name": "CTA Auditor",
+      "role": "Content · audits CTA keywords · sonnet-5 high",
+      "description": "Checks every Instagram script's CTA keyword against the Call To Actions notes and the CTA keyword map, and lists clashes and keywords that send nothing, calling script-reviewer on any reel whose CTA looks wrong. Send it work like \"audit the CTAs\", \"check the comment keywords for November\", or \"which keywords send nothing\". Read only; it reports and never writes.",
+      "skills": [
+        "CTAs",
+        "Keywords",
+        "Audit",
+        "Read only"
+      ],
+      "icon": "Warden",
+      "color": "#2196f3"
+    },
+    {
+      "id": "brand-checker",
+      "name": "Brand Checker",
+      "role": "Brand · turns the guideline into checklists · sonnet-5 high",
+      "description": "Reads the brand guideline PDF in the Brand folder and lists the rules a script, caption or thumbnail must follow, as a checklist. Send it work like \"give me the brand checklist for thumbnails\", \"what are the brand rules for captions\", or \"brand rules for this script\". Read only; it reports and never writes.",
+      "skills": [
+        "Brand guideline",
+        "Checklist",
+        "Read only"
+      ],
+      "icon": "Halo",
+      "color": "#ff3d71"
+    },
+    {
+      "id": "team-capacity",
+      "name": "Team Capacity",
+      "role": "GTD · works out weekly output capacity · sonnet-5 high",
+      "description": "Reads the video team's Efficiency snapshots and works out how many reels and long-form videos the team can finish per week. Send it work like \"what's the team's weekly capacity\", \"how many reels can we finish a week\", or \"can we hit five reels and a YouTube video a week\". Read only; it reports and never writes.",
+      "skills": [
+        "Capacity",
+        "Video team",
+        "Read only"
+      ],
+      "icon": "Fortress",
+      "color": "#00c853"
+    },
+    {
+      "id": "scorecard-tracker",
+      "name": "Scorecard Tracker",
+      "role": "Luke · tracks scorecard targets · sonnet-5 high",
+      "description": "Reads Luke's Organic Growth Manager scorecard and responsibilities and lists every target with what the vault shows about progress on it. Send it work like \"where am I on my scorecard\", \"track my targets\", or \"what does the vault show against my responsibilities\". Read only; it reports and never writes.",
+      "skills": [
+        "Scorecard",
+        "Targets",
+        "Progress",
+        "Read only"
+      ],
+      "icon": "Crown",
+      "color": "#ff9100"
+    }
+  ]
+}

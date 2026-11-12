@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Starting…</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/brand/fonts.css">
+<style>
+  /* GTD: shown in an OS tab while a local app's backend and frontend boot, then replaced by the app */
+  body { margin:0; background:radial-gradient(90% 60% at 50% -8%, rgba(49,100,245,.6), rgba(49,100,245,0) 70%), linear-gradient(180deg, #1B3272, #182A5B 45%, #0E1A3A); color:#F5F8FF; font-family:'Proxima Nova',sans-serif; display:grid; place-items:center; min-height:100vh; }
+  .box { width:min(520px, 90vw); }
+  .k { font-size:10.5px; font-weight:600; letter-spacing:.3em; color:#7DA0FF; margin-bottom:8px; }
+  h1 { font:700 28px/1.15 'Trajan Pro', serif; text-transform:uppercase; letter-spacing:.03em; margin:0 0 6px; } p { color:#8FA6DF; margin:0 0 22px; font-size:13.5px; }
+  .proc { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid rgba(125,160,255,.2); border-radius:14px; margin-bottom:8px; font-size:13px; background:rgba(255,255,255,.06); }
+  .dot { width:9px; height:9px; border-radius:50%; background:#4D64A0; } .dot.up { background:#7DA0FF; } .dot.wait { background:#1A8CF6; animation:p 1s ease-in-out infinite; }
+  .proc span:last-child { margin-left:auto; color:#8FA6DF; font-size:11px; letter-spacing:1px; }
+  @keyframes p { 50% { opacity:.3; } }
+  pre { white-space:pre-wrap; font:11.5px/1.5 'JetBrains Mono',monospace; color:#DCE5FF; background:rgba(8,16,40,.55); border-radius:14px; padding:14px; max-height:40vh; overflow:auto; }
+  button { background:transparent; border:1px solid rgba(214,224,255,.25); color:#F5F8FF; border-radius:999px; padding:8px 16px; font:600 11px 'Proxima Nova', sans-serif; letter-spacing:1.5px; cursor:pointer; margin-top:8px; }
+</style></head>
+<body><div class="box"><div class="k">LOCAL APP</div><h1 id="nm">Starting…</h1><p id="st">Starting the backend and frontend on this Mac.</p><div id="procs"></div><div id="err"></div></div>
+<script>
+(async function () {
+  const id = new URLSearchParams(location.search).get('id');
+  const $ = s => document.getElementById(s);
+  const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const get = async () => ((await (await fetch('/api/apps', { cache: 'no-store' })).json()).apps || []).find(a => a.id === id);
+  let app = await get().catch(() => null);
+  if (!app) { $('nm').textContent = 'Unknown app'; $('st').textContent = 'There is no app called ' + id + ' in apps.json.'; return; }
+  document.title = app.name; $('nm').textContent = app.name;
+  try { parent.osRetitle && parent.osRetitle(window, app.name); } catch {}
+  if (app.up) return location.replace(app.url);
+  const r = await fetch('/api/apps/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }).then(r => r.json()).catch(e => ({ error: e.message }));
+  if (r.error) { $('st').textContent = r.error; return; }
+  const t0 = Date.now();
+  async function showLogs() {
+    const d = await fetch('/api/apps/log?id=' + encodeURIComponent(id)).then(r => r.json()).catch(() => ({ logs: [] }));
+    $('err').innerHTML = (d.logs || []).map(l => `<div class="k" style="margin-top:14px">${esc(l.name.toUpperCase())} LOG</div><pre>${esc(l.tail || '(empty)')}</pre>`).join('') + '<button onclick="location.reload()">TRY AGAIN</button>';
+  }
+  (async function poll() {
+    app = await get().catch(() => app);
+    $('procs').innerHTML = app.procs.map(p => `<div class="proc"><span class="dot ${p.up ? 'up' : 'wait'}"></span><span>${esc(p.name)}</span><span>:${p.port} ${p.up ? 'UP' : 'STARTING'}</span></div>`).join('');
+    if (app.up) { $('st').textContent = 'Ready.'; setTimeout(() => location.replace(app.url), 400); return; }
+    const s = Math.round((Date.now() - t0) / 1000);
+    $('st').textContent = `Starting the backend and frontend on this Mac… ${s}s`;
+    if (Date.now() - t0 > 90000) { $('st').textContent = `Still not up after ${s}s. The logs below say why.`; showLogs(); return; }
+    setTimeout(poll, 800);
+  })();
+})();
+</script></body></html>

@@ -1,0 +1,30 @@
+{
+  "_note": "Root is the GTD vault (SKILL_TREE_ROOT). Live skills come from ~/.claude/skills and the claude.ai synced set; skills/ in the vault is the reference snapshot.",
+  "agents": [],
+  "skillDirs": [
+    "__HOME__/.claude/skills",
+    "__HOME__/.claude/skills/synced/0d6de824-133a-4308-bb14-442da178b43b_496a847d-f3f2-4a2c-855d-d250606f79ff",
+    "Memory/skills/builtin",
+    "Memory/skills/marketplace/claude-code-setup",
+    "Memory/skills/marketplace/claude-md-management",
+    "Memory/skills/marketplace/claude-security",
+    "Memory/skills/marketplace/cwc-makers",
+    "Memory/skills/marketplace/discord",
+    "Memory/skills/marketplace/example-plugin",
+    "Memory/skills/marketplace/frontend-design",
+    "Memory/skills/marketplace/hookify",
+    "Memory/skills/marketplace/imessage",
+    "Memory/skills/marketplace/math-olympiad",
+    "Memory/skills/marketplace/mcp-server-dev",
+    "Memory/skills/marketplace/playground",
+    "Memory/skills/marketplace/plugin-dev",
+    "Memory/skills/marketplace/project-artifact",
+    "Memory/skills/marketplace/receipts",
+    "Memory/skills/marketplace/session-report",
+    "Memory/skills/marketplace/skill-creator",
+    "Memory/skills/marketplace/telegram"
+  ],
+  "docPaths": {
+    "claude": "CLAUDE.md"
+  }
+}
