@@ -1,0 +1,198 @@
+[
+  {
+    "id": "instagram-script-writing",
+    "name": "Instagram Script Writing",
+    "description": "Work a day's reel from the Notion calendar to a filed, indexed script. Driven by Luke saying 'let's do October 6' or 'next one'.",
+    "agent": "gtd-vault",
+    "agentName": "Claude · GTD Vault",
+    "agentDescription": "Claude Code in the Obsidian vault, following the Instagram Script Writing automation note.",
+    "icon": "<svg viewBox='0 0 22 22' width='22' height='22' fill='none' stroke='currentColor' stroke-width='1.5'><path d='M5 4h9l3 3v11H5z'/><path d='M8 10h6M8 13h6M8 16h3'/></svg>",
+    "agentPath": "vault/CLAUDE.md",
+    "workflowPath": "vault/Memory/Automations/Instagram Script Writing.md",
+    "skills": [
+      {
+        "id": "pull-card",
+        "name": "Pull the day's card",
+        "description": "Query the month's Reels Content Calendar in Notion by Posting Date; read Idea, pillar, stage, reference and Drive folder",
+        "icon": "extract",
+        "skillPath": "vault/Memory/Automations/Instagram Script Writing.md"
+      },
+      {
+        "id": "read-doc",
+        "name": "Read the script doc",
+        "description": "Open the one Google Doc in the card's Drive folder: # Transcript and # Script",
+        "icon": "data",
+        "skillPath": "vault/Memory/Automations/Instagram Script Writing.md"
+      },
+      {
+        "id": "present",
+        "name": "Present and critique",
+        "description": "Card, both links, source transcript, adapted script, then an honest critique worst problem first",
+        "icon": "visual",
+        "skillPath": "vault/Memory/Automations/Instagram Script Writing.md"
+      },
+      {
+        "id": "draft",
+        "name": "Work the draft",
+        "description": "Change only what Luke asks; raise a concern once, then ship and record it",
+        "icon": "build",
+        "skillPath": "vault/Memory/Writing Instagram Content.md"
+      },
+      {
+        "id": "clips",
+        "name": "Source client clips",
+        "description": "Every client quote gets a Fathom deep link with timestamp, or it is dropped",
+        "icon": "extract",
+        "skillPath": "vault/Memory/Automations/Instagram Script Writing.md"
+      },
+      {
+        "id": "file-note",
+        "name": "File the vault note",
+        "description": "Content/Instagram/Scripts/<Year>/<Month>/<Upload Date> - <Title>.md from the template",
+        "icon": "build",
+        "skillPath": "vault/Memory/Automations/Instagram Script Writing.md"
+      },
+      {
+        "id": "advance-stage",
+        "name": "Advance the Notion stage",
+        "description": "One step along Research → Scripting → QA/QC, never past QA/QC automatically",
+        "icon": "data",
+        "skillPath": "vault/Memory/Automations/Instagram Script Writing.md"
+      },
+      {
+        "id": "handoff",
+        "name": "Clipboard handoff",
+        "description": "Rebuild the doc with the approved script and pbcopy it for Cmd+A, Cmd+V",
+        "icon": "build",
+        "skillPath": "vault/Memory/Automations/Instagram Script Writing.md"
+      },
+      {
+        "id": "index",
+        "name": "Update the month index",
+        "description": "Row in upload-date order, pillar list, CTA keyword map, blockers and open items",
+        "icon": "data",
+        "skillPath": "vault/Memory/Automations/Instagram Script Writing.md"
+      }
+    ]
+  },
+  {
+    "id": "instagram-vault-sync",
+    "name": "Instagram Vault Sync",
+    "description": "The daily 06:15 launchd job that writes every posted reel and its numbers into the vault. No Claude session needed.",
+    "agent": "ig-vault-sync",
+    "agentName": "IG Vault Sync",
+    "agentDescription": "~/Coding/api-registry/tools/ig_vault_sync.py, run by launchd every day at 06:15.",
+    "icon": "<svg viewBox='0 0 22 22' width='22' height='22' fill='none' stroke='currentColor' stroke-width='1.5'><path d='M17 8a6 6 0 0 0-11-1'/><path d='M5 14a6 6 0 0 0 11 1'/><path d='M5 3v4h4M17 19v-4h-4'/></svg>",
+    "workflowPath": "vault/Memory/Automations/Instagram Vault Sync.md",
+    "skills": [
+      {
+        "id": "find-reels",
+        "name": "Find new reels",
+        "description": "Instagram API: reels posted in the last 2 days",
+        "icon": "extract",
+        "skillPath": "vault/Memory/Automations/Instagram Vault Sync.md"
+      },
+      {
+        "id": "transcribe",
+        "name": "Download and transcribe",
+        "description": "Download each reel and transcribe it locally on the CPU, about a minute per reel",
+        "icon": "visual",
+        "skillPath": "vault/Memory/Automations/Instagram Vault Sync.md"
+      },
+      {
+        "id": "title",
+        "name": "Title the reel",
+        "description": "One Opus call per new reel for the title, idea, CTA and pillar",
+        "icon": "build",
+        "skillPath": "vault/Memory/Automations/Instagram Vault Sync.md"
+      },
+      {
+        "id": "analytics",
+        "name": "Refresh analytics",
+        "description": "Lifetime numbers for the last 30 days, each note dated with measured:",
+        "icon": "data",
+        "skillPath": "vault/Memory/Automations/Instagram Vault Sync.md"
+      },
+      {
+        "id": "rebuild-index",
+        "name": "Rebuild the indexes",
+        "description": "Regenerate the auto blocks in the month, year and top-level Script and Analytics indexes",
+        "icon": "data",
+        "skillPath": "vault/Memory/Automations/Instagram Vault Sync.md"
+      }
+    ]
+  },
+  {
+    "id": "chat-logging",
+    "name": "Chat Logging",
+    "description": "Every chat writes itself down as it happens: the hook captures each prompt, Claude keeps the readable note and the chat index current.",
+    "agent": "gtd-vault",
+    "agentName": "Claude · GTD Vault",
+    "agentDescription": "The UserPromptSubmit hook plus Claude's half of the Chat Logging automation.",
+    "icon": "<svg viewBox='0 0 22 22' width='22' height='22' fill='none' stroke='currentColor' stroke-width='1.5'><path d='M3 5h16v10H9l-4 3v-3H3z'/><path d='M7 9h8M7 12h5'/></svg>",
+    "workflowPath": "vault/Memory/Automations/Chat Logging.md",
+    "skills": [
+      {
+        "id": "capture",
+        "name": "Capture the prompt",
+        "description": "chat-log.sh appends the prompt verbatim to Memory/Chats/.raw before Claude sees it",
+        "icon": "extract",
+        "skillPath": "vault/Memory/Automations/Chat Logging.md"
+      },
+      {
+        "id": "chat-note",
+        "name": "Write the chat note",
+        "description": "First prompt creates Memory/Chats/<date> - <Topic>.md with the session id; later prompts update it in place",
+        "icon": "build",
+        "skillPath": "vault/Memory/Automations/Chat Logging.md"
+      },
+      {
+        "id": "chat-index",
+        "name": "Update the chat index",
+        "description": "One line per chat under its theme in 00 Chat Index, loaded every session",
+        "icon": "data",
+        "skillPath": "vault/Memory/Automations/Chat Logging.md"
+      }
+    ]
+  },
+  {
+    "id": "weekly-content-post",
+    "name": "Weekly Content Post (paused)",
+    "description": "Monday 9:00 CT cloud routine that posts the week's content schedule to Slack #daily-updates. Paused 13 Oct 2026.",
+    "agent": "weekly-content-post",
+    "agentName": "Weekly Content Post",
+    "agentDescription": "Claude Code cloud routine trig_016CeuQxjSijH4j8RNEVJR2W. Runs in the cloud and cannot read the vault.",
+    "icon": "<svg viewBox='0 0 22 22' width='22' height='22' fill='none' stroke='currentColor' stroke-width='1.5'><rect x='3' y='5' width='16' height='14' rx='2'/><path d='M3 9h16M7 3v4M15 3v4'/></svg>",
+    "workflowPath": "vault/Memory/Automations/Weekly Content Slack Post.md",
+    "skills": [
+      {
+        "id": "curated",
+        "name": "Curated reels",
+        "description": "One per day from the month's Reels Content Calendar, topic from the doc's # Script",
+        "icon": "extract",
+        "skillPath": "vault/Memory/Automations/Weekly Content Slack Post.md"
+      },
+      {
+        "id": "authentic",
+        "name": "Authentic news reels",
+        "description": "Five, Monday to Friday, no data source",
+        "icon": "data",
+        "skillPath": "vault/Memory/Automations/Weekly Content Slack Post.md"
+      },
+      {
+        "id": "youtube",
+        "name": "YouTube videos",
+        "description": "From the month's YouTube Content Board by Publish Date",
+        "icon": "extract",
+        "skillPath": "vault/Memory/Automations/Weekly Content Slack Post.md"
+      },
+      {
+        "id": "post",
+        "name": "Post to #daily-updates",
+        "description": "Skips the post if this week's message is already in the channel",
+        "icon": "build",
+        "skillPath": "vault/Memory/Automations/Weekly Content Slack Post.md"
+      }
+    ]
+  }
+]

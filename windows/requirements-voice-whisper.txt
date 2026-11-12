@@ -1,0 +1,2 @@
+# Fallback speech-to-text on the CPU (installed into ~\Coding\jarvis\.stt-venv, used through GTD_PYTHON)
+faster-whisper==1.2.1

@@ -1,0 +1,5 @@
+{
+  "brandName": "GTD Schedule",
+  "cronPaths": ["../../../rubric-agentic-os/snapshots/gtd-crons.json"],
+  "timezone": "auto"
+}

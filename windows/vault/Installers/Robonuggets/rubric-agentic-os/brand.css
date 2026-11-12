@@ -1,0 +1,346 @@
+/* GTD brand for the Agentic OS (19 Oct 2026).
+   Source: Brand/GTD/GTD update BG-2 (1).pdf, the 2026 guideline. Loaded last, so it wins over
+   the kit's own styles, Petra's (jarvis.css) and the windows' (windows.css).
+
+   What it takes from the guideline:
+   - palette: Deep Navy #182A5B, Electric Blue #3164F5, Bright Blue #1A8CF6,
+     Periwinkle #7DA0FF, Ice #F5F8FF, White #FEFEFE (p20-21). No teal, no orange.
+   - grounds: Electric Blue light falling to Deep Navy (p1, p22 Dynamic Blue Blend)
+   - type: Trajan Pro for titles, always uppercase (p24); Proxima Nova for everything
+     else, Extrabold for numbers, with gradient ink (p25)
+   - pattern: vertical lines from the brand mark, drawn on #hexCv (p27)
+   - icons: solid, smooth corners, in a highlight circle (p28)
+   - cards: rounded, soft navy shadow, chips as pills (p5, p11)
+   Colours that are data, not decoration, stay: the six department colours are the
+   Second Brain's own, so an agent keeps its colour when you click through to the map. */
+@import url(assets/brand/fonts.css);
+
+
+:root {
+  --navy:#182A5B; --electric:#3164F5; --bright:#1A8CF6; --peri:#7DA0FF; --ice:#F5F8FF; --white:#FEFEFE;
+  --night:#0E1A3A;
+  --accent:#1A8CF6; --cream:#F5F8FF; --mute:#8FA6DF; --warm:#C3D2FF;
+  --bg:#0E1A3A; --panel:#13224C;
+  --card:rgba(255,255,255,.06); --cardsolid:#1C3170; --text:var(--ice);
+  --muted:var(--mute); --linedim:rgba(125,160,255,.26);
+  --shadow:rgba(5,12,34,.55); --cardborder:rgba(125,160,255,.16); --ink:245,248,255;
+  --glass:linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.03));
+  --glassline:rgba(125,160,255,.2);
+  --pop:linear-gradient(165deg, #233C82 0%, #182A5B 70%);
+  --btn:linear-gradient(180deg, #3F78FF 0%, #3164F5 100%);
+  --softshadow:0 18px 44px rgba(4,10,30,.45);
+  --serif:'Trajan Pro', 'Trajan', serif;
+  --sans:'Proxima Nova', system-ui, sans-serif;
+}
+::selection { background:var(--electric); color:#fff; }
+
+/* ---------- the ground: Electric Blue light falling to navy ---------- */
+html, body {
+  background:
+    radial-gradient(90% 60% at 50% -8%, rgba(49,100,245,.62) 0%, rgba(49,100,245,.18) 42%, rgba(49,100,245,0) 70%),
+    radial-gradient(60% 50% at 50% 52%, rgba(26,140,246,.10) 0%, rgba(26,140,246,0) 70%),
+    linear-gradient(180deg, #1B3272 0%, #182A5B 38%, #13234E 72%, #0E1A3A 100%) !important;
+  background-attachment:fixed !important;
+}
+body { color:var(--ice); font-family:var(--sans); }
+
+/* ---------- widgets become cards ---------- */
+.w { border-top:0 !important; }
+.w:not(.chromeless)::before { content:''; position:absolute; inset:8px; border-radius:24px; z-index:-1;
+  background:var(--glass); border:1px solid var(--glassline);
+  box-shadow:var(--softshadow), inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); pointer-events:none;
+  transition:border-color .3s, box-shadow .3s; }
+.w:not(.chromeless):hover::before { border-color:rgba(125,160,255,.38);
+  box-shadow:0 22px 52px rgba(4,10,30,.5), 0 0 0 1px rgba(49,100,245,.18), inset 0 1px 0 rgba(255,255,255,.09); }
+.w > .wh, .w > .wb { position:relative; }
+.w { overflow:hidden; }
+/* the old orange hover underline becomes a short blue rule on the card's top edge */
+.w::after { top:8px !important; left:32px !important; height:2px !important; border-radius:2px;
+  background:linear-gradient(90deg, var(--electric), var(--peri)) !important; }
+.w:hover::after { width:72px !important; }
+.w.chromeless::after { display:none !important; }
+.w.live { border-top-color:transparent !important; }
+.w.live::before { border-color:var(--electric) !important; }
+
+/* headers: Trajan, uppercase, an icon in a highlight circle */
+.wh { padding:24px 26px 8px 26px; font-family:var(--serif); font-weight:700;
+  font-size:17px !important; letter-spacing:1.6px !important; text-transform:uppercase; color:var(--white);
+  gap:12px; }
+.wh .g { font-family:var(--sans); }
+.wh > span, .wh .addskill, .wh .hbtn { white-space:nowrap; }
+.wh > span:not(.g):not(.tick) { flex:0 0 auto; }
+.wh .tick { overflow:hidden; text-overflow:ellipsis; min-width:0; flex:0 1 auto; }
+.wh .tick { font-family:var(--sans); font-weight:600; letter-spacing:1.6px !important; text-transform:uppercase;
+  font-size:9px !important; color:var(--mute); }
+.wb { margin-bottom:22px !important; }
+.bico { display:inline-grid; place-items:center; flex:0 0 auto; border-radius:50%; color:#fff;
+  background:radial-gradient(120% 120% at 30% 20%, #4F86FF 0%, #3164F5 55%, #2A55D8 100%);
+  box-shadow:0 6px 16px rgba(49,100,245,.45), inset 0 1px 0 rgba(255,255,255,.25); }
+.bico svg { width:52%; height:52%; display:block; }
+.row2 .bico { box-shadow:0 4px 12px rgba(49,100,245,.35); }
+
+/* ---------- the title: the GTD lockup ---------- */
+#w-title .tb { padding:16px 10px 4px; }
+#w-title h1 { font-family:var(--serif); font-weight:700; gap:14px !important; letter-spacing:0 !important;
+  font-size:26px !important; line-height:1; color:var(--white); }
+#w-title h1 .gtdmark { height:40px; width:auto; flex:0 0 auto; filter:drop-shadow(0 4px 14px rgba(49,100,245,.45)); }
+#w-title h1 .wm { font-family:var(--serif); font-size:.74em; line-height:.98; letter-spacing:.06em; text-align:left;
+  color:var(--white); font-weight:700; }
+#w-title h1 .vr { width:1px; height:34px; background:linear-gradient(180deg, transparent, rgba(125,160,255,.6), transparent); flex:0 0 auto; }
+#w-title h1 .osn { font-family:var(--sans); font-weight:600; font-size:.6em; letter-spacing:.32em; text-transform:uppercase;
+  color:var(--peri); }
+#w-title h1 span { font-weight:inherit; }
+.tbar { gap:10px; margin-top:10px; }
+.tbar button { width:30px; height:30px; padding:6px; border-radius:50%; background:rgba(255,255,255,.06);
+  border:1px solid var(--glassline); transition:background .2s, border-color .2s; }
+.tbar button:hover { background:rgba(49,100,245,.3); border-color:var(--electric); }
+.tbar button svg { stroke:var(--warm); }
+.tbar button:hover svg { stroke:#fff; }
+body.edit #editBtn, body.searchopen #searchBtn { background:var(--btn); border-color:var(--electric); }
+body.edit #editBtn svg, body.searchopen #searchBtn svg { stroke:#fff; }
+
+/* ---------- type: numbers in Proxima Extrabold with gradient ink ---------- */
+.bignum, .bigclock, .hero .big {
+  font-family:var(--sans); font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums;
+  background:linear-gradient(180deg, #FFFFFF 10%, #A9C0FF 100%); -webkit-background-clip:text; background-clip:text;
+  color:transparent !important; }
+.bigclock { font-size:38px; }
+.caldate b { color:var(--peri); font-weight:800; }
+.lbl, .cap, .tz, .caldate, .wkgrid .qlab, .bhead, #mixlbl span, .foot2, .wfoot, .srclab, #wheelHint {
+  font-family:var(--sans); font-weight:600; color:var(--mute); }
+.lbl { letter-spacing:.24em; color:var(--peri); }
+.tz b { color:var(--white); font-weight:800; }
+.row2 b, .brow .nm { font-weight:600; color:var(--white); }
+.row2 small { color:var(--mute); }
+.row2 { border-radius:12px; padding:7px 9px; margin:0 -9px; }
+.row2:hover { background:rgba(49,100,245,.16); }
+.row2 .age, .row2 .act { color:var(--peri); }
+
+/* calendar weeks and posting dots: white done, Electric now, hollow coming */
+.wkgrid i { border-radius:3.5px; border-color:rgba(125,160,255,.45); }
+.wkgrid i.done { background:var(--ice); border-color:var(--ice); }
+.wkgrid i.now { background:var(--electric); border-color:var(--electric); box-shadow:0 0 10px rgba(49,100,245,.8); }
+#ytgrid .d { background:rgba(125,160,255,.22); }
+#ytgrid .d.future { border-color:rgba(125,160,255,.2); }
+#ytgrid .d.pub { background:radial-gradient(circle at 35% 30%, #8FB0FF, #3164F5 70%); box-shadow:0 0 10px rgba(49,100,245,.65); }
+#ytgrid .d.today { outline-color:var(--peri); }
+#mixbar i { border-radius:99px; }
+
+/* routines board: an inset navy well, split-flap times in Proxima */
+.board { background:rgba(10,20,52,.55); border:1px solid rgba(125,160,255,.12); border-radius:16px;
+  box-shadow:inset 0 2px 14px rgba(4,10,30,.6); }
+.flap { font-family:var(--sans); font-weight:800; letter-spacing:.5px;
+  background:linear-gradient(180deg, #2A4590 48%, #1B3170 52%); border-radius:6px; }
+.flap::after { background:rgba(8,16,40,.85); }
+.brow { border-radius:8px; }
+.brow:hover { background:rgba(49,100,245,.14); }
+.brow.next .flap { background:linear-gradient(180deg, #4A80FF 48%, #3164F5 52%); }
+.brow.next .st { color:var(--peri); }
+
+/* ---------- buttons and chips: pills ---------- */
+.hbtn, .wh .addskill, #addApp { font-family:var(--sans); font-weight:600; border-radius:999px; letter-spacing:.16em;
+  padding:6px 13px; border:1px solid var(--glassline); color:var(--ice); background:rgba(255,255,255,.05); }
+.hbtn:hover, .wh .addskill:hover { border-color:var(--electric); color:#fff; background:rgba(49,100,245,.3);
+  transform:none; box-shadow:none; }
+.hbtn.solid, .wh .addskill { background:var(--btn); border-color:transparent; color:#fff;
+  box-shadow:0 6px 16px rgba(49,100,245,.4); }
+.chip { border-radius:999px; border-color:var(--glassline); color:var(--warm); }
+.chip.hot { border-color:var(--electric); background:rgba(49,100,245,.25); color:#fff; }
+.abtn { border-radius:999px; }
+.abtn.play { border-color:var(--electric); color:var(--peri); }
+.abtn.play:hover { background:var(--btn); color:#fff; }
+.dk { border-radius:16px; background:var(--pop); border:1px solid var(--glassline); }
+.prog .track i, #pill { background:var(--btn); }
+.prog .tm { font-family:var(--sans); font-weight:800; }
+
+/* ---------- pop-ups, tips, tour, tweak panel: navy cards ---------- */
+#popup, #appop .pop, #addpop .pop, #adj, #tourCard, #tip, #osTweak, #searchBar, #ballMenu {
+  background:var(--pop) !important; border:1px solid var(--glassline) !important; border-radius:22px !important;
+  box-shadow:0 24px 60px rgba(4,10,30,.6), inset 0 1px 0 rgba(255,255,255,.07) !important; }
+#tip { border-radius:14px !important; }
+#popup h2, #appop h2, #tourCard h3 { font-family:var(--serif); font-weight:700; text-transform:uppercase;
+  letter-spacing:.04em; color:var(--white); }
+#popup .pk, #appop .pk, #addpop .pk, #tip .t1 { font-family:var(--sans); font-weight:600; color:var(--peri); letter-spacing:.3em; }
+#popup .file, #appop textarea, #addpop textarea, #searchIn { border-radius:12px; }
+#popup button, #appop button, #addpop .row2 button, #tourCard .tfoot button, #osTweak .foot button {
+  border-radius:999px !important; font-family:var(--sans); font-weight:600; letter-spacing:.14em; }
+#popup .go, #appop .go, #addpop .copyp, #tourCard .tfoot #tourNext, #osTweak .foot button:not(.ghost):not(.on) {
+  background:var(--btn) !important; color:#fff !important; border-color:transparent !important;
+  box-shadow:0 8px 20px rgba(49,100,245,.4) !important; }
+#popup .warn { color:var(--peri); border-color:var(--peri); }
+#tourCard .arr { background:#1E357A; }
+#tourCard .tfoot span { font-weight:800; }
+#overlay, #appop, #addpop { background:rgba(8,16,40,.5) !important; backdrop-filter:blur(4px); }
+#searchBar { border-color:rgba(49,100,245,.6) !important; }
+#ghost { border-color:var(--peri); border-radius:24px; background:rgba(49,100,245,.08); }
+#ghost.swap { background:rgba(49,100,245,.18); }
+.rs, #orbGrip, .wx { background:var(--electric); }
+
+/* ---------- the bottom pill, the wave, the tab bar ---------- */
+#osTabs, #winBar { background:rgba(16,30,70,.72) !important; border:1px solid rgba(125,160,255,.24) !important;
+  backdrop-filter:blur(14px) !important; box-shadow:0 14px 34px rgba(4,10,30,.5), inset 0 1px 0 rgba(255,255,255,.06) !important; }
+#osTabs button { font-family:var(--sans); font-weight:600; letter-spacing:.2em; }
+#osTabs button.on, #winBar .chip.on { background:var(--btn) !important; color:#fff !important;
+  box-shadow:0 6px 16px rgba(49,100,245,.45); }
+#osTabs.covered button.on { background:transparent !important; box-shadow:inset 0 0 0 1px rgba(49,100,245,.7) !important; }
+#jvWave:hover { background:rgba(49,100,245,.18); }
+#jvWave.listening { background:rgba(49,100,245,.28); box-shadow:0 0 0 1px rgba(125,160,255,.7) inset; }
+#jvDock, #jvJobs .job, #agTip, #winLaunch {
+  background:rgba(20,36,84,.9) !important; border-color:var(--glassline) !important;
+  box-shadow:0 18px 44px rgba(4,10,30,.55) !important; }
+#jvDock { border-radius:20px; }
+#jvDock .st, #agTip i { color:var(--peri); }
+#jvDock .jv { color:var(--white); font-size:15px; }
+#jvDock input, #winLaunch input { background:rgba(8,16,40,.5); border-color:var(--glassline); border-radius:999px; padding-left:14px; }
+#jvDock input:focus, #winLaunch input:focus { border-color:var(--electric); }
+#jvDock button { border-radius:999px; }
+#winLaunch { border-radius:20px; }
+#winLaunch .app:hover, #winLaunch .res button:hover { background:rgba(49,100,245,.2); }
+#winLaunch .lbl { color:var(--peri); }
+
+/* windows: navy frames with a glass title bar */
+.win { background:#0F1C45; }
+.win.popup { border-radius:20px; border-color:var(--glassline); box-shadow:0 34px 90px rgba(4,10,30,.7); }
+.win .wbar { background:linear-gradient(180deg, #1E357A, #182A5B); border-bottom-color:rgba(125,160,255,.16); }
+.win .wt { font-family:var(--serif); font-weight:700; text-transform:uppercase; letter-spacing:.05em; font-size:13px; }
+.win .wbar button { border-radius:999px; }
+.win .wbar button:hover { color:#fff; border-color:var(--electric); background:rgba(49,100,245,.3); }
+body.wintab::after { background:#0E1A3A; }
+#winShade { background:rgba(8,16,40,.5); }
+
+/* the round Second Brain window and the console tab */
+#brainRim { border-color:rgba(125,160,255,.6) !important;
+  box-shadow:0 0 22px 3px rgba(49,100,245,.45), inset 0 0 26px rgba(49,100,245,.18) !important; }
+#brainBack, #brainClose { background:rgba(20,36,84,.9) !important; border-color:var(--glassline) !important; }
+#brainClose:hover { border-color:var(--electric) !important; color:#fff !important; }
+#brainWrap, #brainFrame { background:#0E1A3A !important; }
+#brainLoad { background:#0E1A3A !important; }
+#portal { background:radial-gradient(circle at var(--px) var(--py), #233C82 0%, #182A5B 22%, #0E1A3A 50%, #0A1432 70%) !important; }
+#consoleWrap { background:#0E1A3A !important; }
+
+/* tour glow and search hits in brand blue */
+@keyframes tourGlow {
+  0%, 100% { box-shadow:0 0 0 2px rgba(49,100,245,.95), 0 0 16px 4px rgba(49,100,245,.6), 0 0 36px 10px rgba(49,100,245,.28); }
+  50% { box-shadow:0 0 0 2px rgba(125,160,255,.65), 0 0 10px 2px rgba(49,100,245,.38), 0 0 24px 6px rgba(49,100,245,.15); }
+}
+body.searching .oi.hit { box-shadow:0 0 0 2px var(--electric), 0 0 26px rgba(49,100,245,.65); }
+
+/* scrollbars */
+.brows, .approws, #calRows { scrollbar-color:rgba(125,160,255,.3) transparent; }
+.brows::-webkit-scrollbar-thumb:hover, .approws::-webkit-scrollbar-thumb:hover, #calRows::-webkit-scrollbar-thumb:hover { background:var(--electric); }
+#w-sk .wh .tick { display:none; }   /* the hint is on every card already; the header keeps its title */
+
+/* calendar: the 2 hours either side of now */
+#calRows .cal-past { opacity:.5; }
+#calRows .cal-live b { color:#fff; }
+#calRows .cal-live .age { color:#fff; background:var(--btn); border-radius:999px; padding:2px 8px; }
+#calRows .cal-none b { color:var(--mute); font-weight:400; }
+#calRows .calnow { display:flex; align-items:center; gap:8px; margin:6px 0; font:600 9px var(--sans); letter-spacing:.24em; color:var(--peri); }
+#calRows .calnow::before, #calRows .calnow::after { content:''; height:1px; flex:1; background:linear-gradient(90deg, transparent, rgba(125,160,255,.7)); }
+#calRows .calnow::after { background:linear-gradient(90deg, rgba(125,160,255,.7), transparent); }
+
+/* square and tall boards (dashboard.html, SHAPE / DOCK): the cards live in one strip that
+   scrolls, a column on the right or a row along the bottom; the edge fades to say "more" */
+#dock { position:fixed; z-index:10; overscroll-behavior:contain;
+  scrollbar-width:thin; scrollbar-color:rgba(125,160,255,.35) transparent; }
+#dock::-webkit-scrollbar { width:6px; height:6px; }
+#dock::-webkit-scrollbar-thumb { background:rgba(125,160,255,.35); border-radius:3px; }
+body.dock-right #dock { display:flex; flex-direction:column; overflow-x:hidden; overflow-y:auto;
+  -webkit-mask-image:linear-gradient(180deg, #000 calc(100% - 46px), transparent);
+          mask-image:linear-gradient(180deg, #000 calc(100% - 46px), transparent); padding-bottom:40px; }
+body.dock-bottom #dock { display:flex; flex-direction:row; overflow-y:hidden; overflow-x:auto; scroll-snap-type:x proximity;
+  -webkit-mask-image:linear-gradient(90deg, #000 calc(100% - 46px), transparent);
+          mask-image:linear-gradient(90deg, #000 calc(100% - 46px), transparent); padding-right:40px; }
+body.dock #dock > .w { position:relative !important; flex:0 0 auto; transition:none; }
+body.dock-bottom #dock > .w { scroll-snap-align:start; }
+/* the layout is automatic here, so no edit or widget library */
+body.dock #editBtn, body.dock #libBtn { display:none; }
+body.dock .bigclock { font-size:30px; white-space:nowrap; }
+
+/* ---------- flat glass, Apple materials (19 Oct 2026) ----------
+   Luke: keep the glass, but flat elements inside it, per the guideline. No glow, nothing
+   shaded to look like a sphere, and gradients used sparingly and never to fake 3D. The
+   ground keeps its one brand gradient (p22); everything on it is flat colour.
+   From Apple's design talks (github.com/emilkowalski/skills, apple-design):
+   - cards are a translucent material: blur plus saturation, a bright hairline on the top
+     edge where light catches it, and a neutral shadow that separates rather than glows;
+     bigger surfaces are a little heavier than small ones
+   - text on glass is solid and high contrast, never a gradient
+   - feedback lands on press: buttons dip to 97% the instant they are pressed
+   - reduced transparency, reduced motion and higher contrast are all honoured */
+:root {
+  --btn:#3164F5;
+  --glass:rgba(22,40,96,.42);
+  --glassline:rgba(160,185,255,.16);
+  --softshadow:0 10px 30px rgba(4,10,30,.32);
+  --pop:rgba(20,36,86,.86);
+}
+
+/* the material */
+.w:not(.chromeless)::before { background:var(--glass); border:1px solid var(--glassline);
+  border-top-color:rgba(220,230,255,.26);
+  box-shadow:var(--softshadow);
+  backdrop-filter:blur(22px) saturate(160%); -webkit-backdrop-filter:blur(22px) saturate(160%); }
+.w:not(.chromeless):hover::before { border-color:rgba(160,185,255,.3); border-top-color:rgba(220,230,255,.34);
+  box-shadow:var(--softshadow); }
+.w.live::before { border-color:var(--electric) !important; box-shadow:var(--softshadow) !important; }
+
+/* flat elements: icon discs, numbers, dots, the lockup */
+.bico, .row2 .bico { background:var(--electric); box-shadow:none; }
+.bignum, .bigclock, .hero .big { background:none; -webkit-background-clip:border-box; background-clip:border-box;
+  color:var(--white) !important; letter-spacing:-.025em; }
+#w-title h1 .gtdmark { filter:none; }
+.wkgrid i.now { box-shadow:none; }
+#ytgrid .d.pub { background:var(--electric); box-shadow:none; }
+.flap, .brow.next .flap { background:#22397C; }
+.brow.next .flap { background:var(--electric); }
+.board { background:rgba(8,16,42,.5); box-shadow:none; border:1px solid rgba(160,185,255,.1); }
+
+/* buttons and pills: flat Electric Blue, no coloured halo */
+.hbtn.solid, .wh .addskill { background:var(--btn); box-shadow:none; }
+#popup .go, #appop .go, #addpop .copyp, #tourCard .tfoot #tourNext, #osTabs button.on, #winBar .chip.on,
+#osTweak .foot button:not(.ghost):not(.on) { background:var(--btn) !important; box-shadow:none !important; }
+body.edit #editBtn, body.searchopen #searchBtn { background:var(--btn); }
+.hbtn, .wh .addskill, #addApp, .tbar button, .abtn, #osTabs button, #popup button, #appop button,
+#tourCard .tfoot button, .v-actions button { transition:transform .1s ease-out, background .2s, border-color .2s; }
+.hbtn:active, .wh .addskill:active, #addApp:active, .tbar button:active, .abtn:active, #osTabs button:active,
+#popup button:active, #appop button:active, #tourCard .tfoot button:active { transform:scale(.97); }
+
+/* pop-ups, tips and bars: a heavier material, still flat */
+#popup, #appop .pop, #addpop .pop, #adj, #tourCard, #tip, #osTweak, #searchBar, #ballMenu {
+  background:var(--pop) !important; border:1px solid var(--glassline) !important;
+  border-top-color:rgba(220,230,255,.26) !important;
+  box-shadow:0 18px 48px rgba(4,10,30,.45) !important;
+  backdrop-filter:blur(28px) saturate(160%); -webkit-backdrop-filter:blur(28px) saturate(160%); }
+#osTabs, #winBar { background:rgba(16,30,70,.55) !important; border-top-color:rgba(220,230,255,.24) !important;
+  box-shadow:0 10px 28px rgba(4,10,30,.35) !important;
+  backdrop-filter:blur(22px) saturate(160%) !important; }
+#jvDock, #jvJobs .job, #agTip, #winLaunch { box-shadow:0 14px 36px rgba(4,10,30,.4) !important; }
+.win .wbar { background:#1B3170; }
+.win.popup { box-shadow:0 24px 64px rgba(4,10,30,.55); }
+
+/* focus and highlight as outlines, never glows */
+@keyframes tourGlow { 0%, 100% { box-shadow:0 0 0 2px rgba(49,100,245,.95); } 50% { box-shadow:0 0 0 2px rgba(125,160,255,.6); } }
+body.searching .oi.hit { box-shadow:0 0 0 2px var(--electric); }
+#brainRim { border-color:rgba(125,160,255,.55) !important; box-shadow:none !important; }
+#jvWave.listening { box-shadow:inset 0 0 0 1px rgba(125,160,255,.7); }
+
+@media (prefers-reduced-transparency: reduce) {
+  .w:not(.chromeless)::before, #popup, #appop .pop, #tourCard, #osTabs, #winBar {
+    background:#16285E !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
+}
+@media (prefers-contrast: more) {
+  .w:not(.chromeless)::before { border-color:rgba(220,230,255,.6); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hbtn:active, .wh .addskill:active, #addApp:active, .tbar button:active, .abtn:active, #osTabs button:active { transform:none; }
+}
+
+/* the dock's target switch: typed prompts go to Claude Code or Petra (jarvis.js) */
+#jvDock form .to { flex:0 0 auto; padding:0 12px; border-radius:999px; font:600 9.5px var(--sans); letter-spacing:.16em;
+  color:var(--peri); background:rgba(255,255,255,.05); border:1px solid var(--glassline); }
+#jvDock form .to.code { color:#fff; background:var(--btn); border-color:transparent; }
+
+/* the board never scrolls (dashboard.html pinPage snaps any stray scroll back) */
+html, body { overflow:hidden !important; overscroll-behavior:none; height:100%; }

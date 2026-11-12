@@ -1,0 +1,54 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PWSH__ -NoProfile -ExecutionPolicy Bypass -File \"__VAULT__/.claude/hooks/session-load.ps1\"",
+            "statusMessage": "Loading automations and chat index..."
+          },
+          {
+            "type": "command",
+            "command": "__PWSH__ -NoProfile -ExecutionPolicy Bypass -File \"__VAULT__/.claude/hooks/rubric-status.ps1\" idle \"session started\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PWSH__ -NoProfile -ExecutionPolicy Bypass -File \"__VAULT__/.claude/hooks/chat-log.ps1\"",
+            "statusMessage": "Logging chat..."
+          },
+          {
+            "type": "command",
+            "command": "__PWSH__ -NoProfile -ExecutionPolicy Bypass -File \"__VAULT__/.claude/hooks/rubric-status.ps1\" active \"working\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PWSH__ -NoProfile -ExecutionPolicy Bypass -File \"__VAULT__/.claude/hooks/rubric-status.ps1\" idle \"finished a turn\""
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PWSH__ -NoProfile -ExecutionPolicy Bypass -File \"__VAULT__/.claude/hooks/rubric-status.ps1\" idle \"session ended\""
+          }
+        ]
+      }
+    ]
+  }
+}

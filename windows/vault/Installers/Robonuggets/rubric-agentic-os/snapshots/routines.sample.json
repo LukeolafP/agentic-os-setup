@@ -1,0 +1,15 @@
+{
+  "generated": "2026-01-01T07:00:00Z",
+  "sources": [
+    { "key": "desktop", "label": "DESKTOP AGENT" },
+    { "key": "server", "label": "HOME SERVER" }
+  ],
+  "counts": { "desktop": 3, "server": 2 },
+  "routines": [
+    { "t": "07:00", "d": "daily", "src": "desktop", "n": "morning digest", "desc": "summarize inbox + calendar into one note" },
+    { "t": "12:30", "d": "daily", "src": "desktop", "n": "midday check-in", "desc": "surface anything waiting on you" },
+    { "t": "18:30", "d": "mon,wed,fri", "src": "server", "n": "backup sweep", "desc": "sync workspace to backup storage" },
+    { "t": "21:00", "d": "daily", "src": "desktop", "n": "evening log", "desc": "write the day's log entry" },
+    { "t": "08:00", "d": "dom:1", "src": "server", "n": "monthly report", "desc": "fires on the 1st of the month" }
+  ]
+}

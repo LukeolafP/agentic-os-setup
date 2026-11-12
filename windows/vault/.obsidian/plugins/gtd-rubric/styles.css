@@ -1,0 +1,24 @@
+/* GTD Rubric: the OS fills its tab edge to edge */
+.workspace-leaf-content[data-type="gtd-rubric-os"] .view-content.gtd-rubric-view {
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #0E1A3A;
+}
+/* the leaf around it never scrolls either */
+.workspace-leaf-content[data-type="gtd-rubric-os"] { overflow: hidden; }
+.gtd-rubric-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: #0E1A3A;
+}
+.gtd-rubric-offline {
+  max-width: 460px;
+  margin: 18vh auto 0;
+  text-align: center;
+  color: var(--text-muted);
+}
+.gtd-rubric-offline h3 { color: var(--text-normal); }
+.gtd-rubric-actions { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }

@@ -1,0 +1,6 @@
+/* GTD brand fonts (2026 guideline): Trajan Pro for titles, Proxima Nova for everything else */
+@font-face { font-family:'Proxima Nova'; src:url(proxima-300.ttf) format('truetype'); font-weight:300; font-display:swap; }
+@font-face { font-family:'Proxima Nova'; src:url(proxima-400.ttf) format('truetype'); font-weight:400; font-display:swap; }
+@font-face { font-family:'Proxima Nova'; src:url(proxima-600.ttf) format('truetype'); font-weight:500 600; font-display:swap; }
+@font-face { font-family:'Proxima Nova'; src:url(proxima-800.ttf) format('truetype'); font-weight:700 900; font-display:swap; }
+@font-face { font-family:'Trajan Pro'; src:url(trajan-700.otf) format('opentype'); font-weight:100 900; font-display:swap; }

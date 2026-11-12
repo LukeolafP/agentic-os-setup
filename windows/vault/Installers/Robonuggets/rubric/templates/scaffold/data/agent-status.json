@@ -1,0 +1,97 @@
+{
+  "gtd-vault": {
+    "status": "active",
+    "task": "<task-notification> <task-id>a73830e1f2eec8233</task-id> <tool-use-id>…",
+    "updatedAt": 1794523314509
+  },
+  "case-study-logos": {
+    "status": "idle",
+    "task": "done: Run across every client case study in the Google Drive folder GTD Context / Case Studies (folder id 1OrL5LaPQ4V5iV",
+    "updatedAt": 1792089367998
+  },
+  "hook-analyst": {
+    "status": "idle",
+    "task": "done: Month: October 2026. Read the Instagram analytics notes for October 2026 and rank every reel by completion, by sha",
+    "updatedAt": 1792091576449
+  },
+  "script-reviewer": {
+    "status": "idle",
+    "task": "done: Date range: 16 to 31 October 2026. Review every Instagram script in that range against the Writing Instagram Conte",
+    "updatedAt": 1792091992675
+  },
+  "cta-auditor": {
+    "status": "idle",
+    "task": "done: Scope: every October 2026 Instagram script. Check each script's CTA keyword against the Call To Actions notes and ",
+    "updatedAt": 1792092161217
+  },
+  "brand-checker": {
+    "status": "idle",
+    "task": "done: Read the full brand guideline PDF in the Brand folder and give all three checklists: the rules a script, a caption",
+    "updatedAt": 1792092167521
+  },
+  "team-capacity": {
+    "status": "idle",
+    "task": "done: Work out how many reels and how many long-form videos the video team can finish per week from the latest Efficienc",
+    "updatedAt": 1792092430052
+  },
+  "scorecard-tracker": {
+    "status": "idle",
+    "task": "done: Read Luke's Organic Growth Manager Scorecard and Responsibilities notes and list every target with what the vault ",
+    "updatedAt": 1792092376823
+  },
+  "bp-brand-checker": {
+    "status": "idle",
+    "task": "done: Brand check the new Blueprint invoice icon (Brand/Blueprint/icons/invoice.svg) at 48/24/16 px on white, blue a",
+    "updatedAt": 1793292226834
+  },
+  "ac-brand-checker": {
+    "status": "idle",
+    "task": "done: Brand check the current Alpha Carrier upsell, Content/Website/Blueprint/Funnel/Alpha Carrier/alpha-carrier-classic",
+    "updatedAt": 1793289432728
+  },
+  "bp-creative-director": {
+    "status": "idle",
+    "task": "done: Test run of the Blueprint team, end to end: have bp-graphic-designer add one new icon, invoice (a sheet with a dol",
+    "updatedAt": 1793290213980
+  },
+  "ac-creative-director": {
+    "status": "idle",
+    "task": "failed: Luke (30 Oct 2026) wants 5 variations of the Alpha Carrier upsell page (the classic red and black one, Content/W",
+    "updatedAt": 1793388582207
+  },
+  "bp-mockup-designer": {
+    "status": "idle",
+    "task": "done: Make a 1200x630 Open Graph share image for the Blueprint sales page: the box-4-b cutout on blueprint blue with the",
+    "updatedAt": 1793290506461
+  },
+  "ac-mockup-designer": {
+    "status": "idle",
+    "task": "done: Make a 1200x630 Open Graph share image for the Alpha Carrier upsell: the classic box cutout on white with the blac",
+    "updatedAt": 1793290819556
+  },
+  "bp-page-builder": {
+    "status": "idle",
+    "task": "done: Draft a Blueprint 404 page (heading, one line, a native Buy now button slot and a link back to the sales page) in ",
+    "updatedAt": 1793291038746
+  },
+  "ac-page-builder": {
+    "status": "idle",
+    "task": "done: Luke (30 Oct 2026) picked v3 \"Split\" of the video-first Alpha Carrier upsell variations: Content/Website/Blueprint",
+    "updatedAt": 1793392823600
+  },
+  "bp-motion-designer": {
+    "status": "idle",
+    "task": "done: Record the Blueprint logo roll-out from the sales page as a 1080x1080 MP4 under 6 s into Brand/Blueprint/motio",
+    "updatedAt": 1793291284256
+  },
+  "ac-motion-designer": {
+    "status": "idle",
+    "task": "done: Record the classic Alpha upsell's hero conveyor scene as a seamless loop MP4, 1920x1080, under 8 s, into Brand/Alp",
+    "updatedAt": 1793291773734
+  },
+  "ring-organizer": {
+    "status": "idle",
+    "task": "session ended",
+    "updatedAt": 1794516576325
+  }
+}

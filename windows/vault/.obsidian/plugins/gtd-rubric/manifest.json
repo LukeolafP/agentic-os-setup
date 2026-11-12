@@ -1,0 +1,9 @@
+{
+  "id": "gtd-rubric",
+  "name": "GTD Rubric",
+  "version": "1.2.2",
+  "minAppVersion": "1.8.0",
+  "description": "Opens the Rubric Agentic OS (with the Second Brain, the Rubric console and JARVIS) as a page inside Obsidian, with microphone access through Obsidian itself.",
+  "author": "Luke Jarrow",
+  "isDesktopOnly": true
+}

@@ -1,0 +1,31 @@
+{
+  "port": 50000,
+  "artifactsDir": "artifacts",
+  "models": [
+    "HAIKU",
+    "SONNET",
+    "OPUS",
+    "FABLE"
+  ],
+  "modelColors": [
+    "#2aa88a",
+    "#3f8fd4",
+    "#9a66e0",
+    "#ff6b1a"
+  ],
+  "efforts": [
+    "LOW",
+    "MEDIUM",
+    "HIGH",
+    "XHIGH",
+    "MAX"
+  ],
+  "skills": [],
+  "runner": {
+    "command": "claude -p \"/{skill}\" --model {model} --effort {effort} --permission-mode bypassPermissions",
+    "cwd": "__VAULT__"
+  },
+  "partnerHints": "sponsor|collab|partner|brand|affiliate|deal|invoice|pitch|opportunit",
+  "leadHints": "join|member|sign\\s?up|subscri|pricing|enroll|course|coaching|access|billing|refund",
+  "personalFrom": "@(gmail|googlemail|yahoo|outlook|hotmail|icloud|proton)\\."
+}

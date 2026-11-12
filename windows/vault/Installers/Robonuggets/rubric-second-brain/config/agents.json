@@ -1,0 +1,1 @@
+{ "_note": "No VPS or scoped agents. Cloud routines cannot read the vault, so nothing here has synced reach.", "agents": [] }

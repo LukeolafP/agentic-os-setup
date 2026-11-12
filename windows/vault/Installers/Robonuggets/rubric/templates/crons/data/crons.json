@@ -1,0 +1,47 @@
+{
+  "description": "SAMPLE DATA - replace with your own cron registry or point cronPaths in config.json to your agent's cron files",
+  "crons": [
+    {
+      "id": "daily-sync",
+      "name": "(sample) Daily sync (8am)",
+      "cron": "0 8 * * *",
+      "enabled": true
+    },
+    {
+      "id": "weekly-report",
+      "name": "(sample) Weekly report (Monday 9am)",
+      "cron": "0 9 * * 1",
+      "enabled": true
+    },
+    {
+      "id": "hourly-check",
+      "name": "(sample) Hourly health check",
+      "cron": "15 * * * *",
+      "enabled": true
+    },
+    {
+      "id": "morning-standup",
+      "name": "(sample) Morning standup reminder",
+      "cron": "0 9 * * 1-5",
+      "enabled": true
+    },
+    {
+      "id": "evening-review",
+      "name": "(sample) Evening review",
+      "cron": "0 21 * * *",
+      "enabled": true
+    },
+    {
+      "id": "content-scan",
+      "name": "(sample) Content trend scan",
+      "cron": "30 10 * * 2,4",
+      "enabled": true
+    },
+    {
+      "id": "backup-check",
+      "name": "(sample) Weekly backup check",
+      "cron": "0 3 * * 0",
+      "enabled": false
+    }
+  ]
+}

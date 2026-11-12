@@ -1,0 +1,21 @@
+{
+  "_note": "Only real connections that talk to something off this machine, as of 15 Oct 2026. Unauthenticated claude.ai connectors (Asana, Canva, Figma, HubSpot...) are left out until they are connected. Status: live, broken, or unconfigured.",
+  "apps": [
+    { "id": "app:api-registry", "label": "API Registry", "kind": "mcp", "access": "claude", "status": "live", "desc": "Local MCP server at ~/Coding/api-registry: Hyros, GoHighLevel, Instagram, YouTube Data. TikTok and YouTube Analytics not credentialed.", "links": [] },
+    { "id": "app:hyros", "label": "Hyros", "kind": "api", "access": "claude", "status": "live", "desc": "Attribution and sales, via the API registry. Read usdPrice, not price.", "links": ["Memory/Organic Attribution.md"] },
+    { "id": "app:ghl", "label": "GoHighLevel", "kind": "api", "access": "claude", "status": "live", "desc": "CRM, leads, booked calls and conversations, via the API registry", "links": [] },
+    { "id": "app:instagram", "label": "Instagram", "kind": "api", "access": "claude", "status": "live", "desc": "@amritdhanraaj media and insights; token kept alive weekly by ig_token.py", "links": ["Memory/Automations/Instagram Vault Sync.md"] },
+    { "id": "app:youtube", "label": "YouTube Data", "kind": "api", "access": "claude", "status": "live", "desc": "Channel and video data, via the API registry. YouTube Analytics is not credentialed.", "links": [] },
+    { "id": "app:facebook-ads", "label": "Facebook Ads", "kind": "api", "access": "claude", "status": "broken", "desc": "Registered, but FB_ADS_TOKEN is a logged-out user token. Needs a Business Manager System User token.", "links": [] },
+    { "id": "app:marketing", "label": "Marketing MCP", "kind": "mcp", "access": "claude", "status": "live", "desc": "Computed metrics with period-over-period change, wrapping ~/Coding/carousel-builder", "links": [] },
+    { "id": "app:notion", "label": "Notion", "kind": "mcp", "access": "claude", "status": "live", "desc": "Reels Content Calendars and content plans in Amrit's workspace", "links": ["Memory/Automations/Instagram Script Writing.md"] },
+    { "id": "app:gmail-connector", "label": "Gmail", "kind": "mcp", "access": "claude", "status": "live", "desc": "Mail search, drafts and labels", "links": [] },
+    { "id": "app:gcal", "label": "Google Calendar", "kind": "mcp", "access": "claude", "status": "live", "desc": "Events, scorecard deadlines", "links": [] },
+    { "id": "app:gdrive", "label": "Google Drive", "kind": "mcp", "access": "claude", "status": "live", "desc": "Script docs per reel, case studies, testimonials", "links": [] },
+    { "id": "app:googledocs", "label": "Google Docs", "kind": "mcp", "access": "claude", "status": "live", "desc": "Read and update script docs", "links": [] },
+    { "id": "app:googlesheets", "label": "Google Sheets", "kind": "mcp", "access": "claude", "status": "live", "desc": "Hiring sheet, ManyChat keyword tracker, scorecard", "links": [] },
+    { "id": "app:slack", "label": "Slack", "kind": "mcp", "access": "claude", "status": "live", "desc": "#daily-updates and team channels", "links": ["Memory/Automations/Weekly Content Slack Post.md"] },
+    { "id": "app:fathom", "label": "Fathom", "kind": "mcp", "access": "claude", "status": "live", "desc": "Call recordings and transcripts, the source for client clips", "links": [] },
+    { "id": "app:claude-cloud", "label": "Claude Routines", "kind": "api", "access": "claude", "status": "live", "desc": "Cloud routines on claude.ai. They cannot read this vault.", "links": ["Memory/Automations/Weekly Content Slack Post.md"] }
+  ]
+}

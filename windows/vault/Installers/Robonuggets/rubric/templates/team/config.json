@@ -1,0 +1,365 @@
+{
+  "brandName": "GTD Team",
+  "mission": "Luke owns everything that happens after the video is finished, until a qualified lead appears.",
+  "serverLabel": "luke-macbook",
+  "skillsRoot": "__HOME__",
+  "lead": {
+    "id": "gtd-vault",
+    "name": "Petra · GTD Vault",
+    "badge": "Lead",
+    "role": "Main agent · Claude Code in the vault · Opus 5.5 high",
+    "description": "Petra is the agent Luke talks to, by voice on the OS or by text. She answers from the vault and queues the other agents for anything that takes longer.",
+    "skills": [
+      "Instagram scripting",
+      "Chat logging",
+      "Marketing numbers",
+      "Captions and emails",
+      "Motion graphics"
+    ],
+    "icon": "Crown",
+    "color": "#ff6b1a"
+  },
+  "agents": [
+    {
+      "id": "ig-vault-sync",
+      "name": "IG Vault Sync",
+      "role": "launchd job · daily 06:15",
+      "description": "Transcribes every reel posted in the last 2 days into Content/Instagram/Scripts, refreshes 30 days of analytics into Content/Instagram/Analytics, and rebuilds the indexes. One Opus call per new reel, for the title.",
+      "skills": [
+        "Transcription",
+        "Analytics",
+        "Index rebuild"
+      ],
+      "icon": "Echo",
+      "color": "#58abf5"
+    },
+    {
+      "id": "ig-token-refresh",
+      "name": "IG Token Refresh",
+      "role": "launchd job · every 7 days",
+      "description": "Refreshes the Instagram long-lived token so the API registry stays authenticated.",
+      "skills": [
+        "Auth upkeep"
+      ],
+      "icon": "Warden",
+      "color": "#30d158"
+    },
+    {
+      "id": "weekly-content-post",
+      "name": "Weekly Content Post",
+      "role": "Cloud routine · Mon 9:00 CT · paused",
+      "description": "Posts the week's content schedule to Slack #daily-updates from Notion and Drive. It cannot read the vault. Paused 13 Oct 2026.",
+      "skills": [
+        "Notion",
+        "Slack"
+      ],
+      "icon": "Drift",
+      "color": "#b47aff"
+    },
+    {
+      "id": "case-study-logos",
+      "name": "Case Study Logos",
+      "role": "Brand · client logos for case studies · sonnet-5 medium",
+      "description": "Goes through every client case study in Google Drive (GTD Context / Case Studies), finds the highest quality logo for each client company, saves the logo file beside the case study in Drive and places it at the top of the case study doc. Send it work like \"add logos to the case studies\", \"get the client logos\", or \"logo for the new case study\".",
+      "skills": [
+        "logos",
+        "case studies",
+        "Google Drive",
+        "Google Docs"
+      ],
+      "icon": "Halo",
+      "color": "#ff3d71"
+    },
+    {
+      "id": "hook-analyst",
+      "name": "Hook Analyst",
+      "role": "Content · ranks reels and hooks · sonnet-5 high",
+      "description": "Reads the Instagram analytics notes for a given month and ranks that month's reels by completion, shares and saves, with the hook line of the top five and bottom five. Send it work like \"rank October's reels\", \"which hooks held best last month\", or \"hook analysis for September\". Read only; it reports and never writes.",
+      "skills": [
+        "Instagram",
+        "Hooks",
+        "Reel ranking",
+        "Read only"
+      ],
+      "icon": "Sentinel",
+      "color": "#2196f3"
+    },
+    {
+      "id": "script-reviewer",
+      "name": "Script Reviewer",
+      "role": "Scripting · reviews scripts against the rules · sonnet-5 high",
+      "description": "Reviews the Instagram scripts in a given date range against the Writing Instagram Content rules, benchmarking hooks against the month's best performers from hook-analyst. Send it work like \"review the scripts from 1 to 15 November\", \"check this week's scripts against the rules\", or \"are October's scripts on voice\". Read only; it reports and never writes.",
+      "skills": [
+        "Scripts",
+        "Voice rules",
+        "Hook benchmark",
+        "Read only"
+      ],
+      "icon": "Sage",
+      "color": "#fdd835"
+    },
+    {
+      "id": "cta-auditor",
+      "name": "CTA Auditor",
+      "role": "Content · audits CTA keywords · sonnet-5 high",
+      "description": "Checks every Instagram script's CTA keyword against the Call To Actions notes and the CTA keyword map, and lists clashes and keywords that send nothing, calling script-reviewer on any reel whose CTA looks wrong. Send it work like \"audit the CTAs\", \"check the comment keywords for November\", or \"which keywords send nothing\". Read only; it reports and never writes.",
+      "skills": [
+        "CTAs",
+        "Keywords",
+        "Audit",
+        "Read only"
+      ],
+      "icon": "Warden",
+      "color": "#2196f3"
+    },
+    {
+      "id": "brand-checker",
+      "name": "Brand Checker",
+      "role": "Brand · turns the guideline into checklists · sonnet-5 high",
+      "description": "Reads the brand guideline PDF in the Brand folder and lists the rules a script, caption or thumbnail must follow, as a checklist. Send it work like \"give me the brand checklist for thumbnails\", \"what are the brand rules for captions\", or \"brand rules for this script\". Read only; it reports and never writes.",
+      "skills": [
+        "Brand guideline",
+        "Checklist",
+        "Read only"
+      ],
+      "icon": "Halo",
+      "color": "#ff3d71"
+    },
+    {
+      "id": "team-capacity",
+      "name": "Team Capacity",
+      "role": "GTD · works out weekly output capacity · sonnet-5 high",
+      "description": "Reads the video team's Efficiency snapshots and works out how many reels and long-form videos the team can finish per week. Send it work like \"what's the team's weekly capacity\", \"how many reels can we finish a week\", or \"can we hit five reels and a YouTube video a week\". Read only; it reports and never writes.",
+      "skills": [
+        "Capacity",
+        "Video team",
+        "Read only"
+      ],
+      "icon": "Fortress",
+      "color": "#00c853"
+    },
+    {
+      "id": "scorecard-tracker",
+      "name": "Scorecard Tracker",
+      "role": "Luke · tracks scorecard targets · sonnet-5 high",
+      "description": "Reads Luke's Organic Growth Manager scorecard and responsibilities and lists every target with what the vault shows about progress on it. Send it work like \"where am I on my scorecard\", \"track my targets\", or \"what does the vault show against my responsibilities\". Read only; it reports and never writes.",
+      "skills": [
+        "Scorecard",
+        "Targets",
+        "Progress",
+        "Read only"
+      ],
+      "icon": "Crown",
+      "color": "#ff9100"
+    },
+    {
+      "id": "bp-brand-checker",
+      "name": "Blueprint Brand Checker",
+      "role": "Brand · Blueprint brand QA · sonnet-5 high",
+      "description": "Reviews any Driver Recruitment Blueprint page, section, graphic, icon, mockup or GHL snippet against the Blueprint Brand System and returns a pass/fail checklist with file:line and screenshot evidence. Send it work like \"brand check the Order snippets\", \"is this new icon on brand for Blueprint\", \"check the Blueprint sales page on mobile\", or \"review this mockup against the Blueprint brand\". Read only; it reports and never writes.",
+      "skills": [
+        "Blueprint",
+        "Brand QA",
+        "Read only"
+      ],
+      "icon": "Sentinel",
+      "color": "#ff3d71",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-graphic-designer",
+      "name": "Blueprint Graphic Designer",
+      "role": "Brand · Blueprint icons and illustration · opus-5-5 high",
+      "description": "Draws Driver Recruitment Blueprint graphics in the chosen brand style: new stencil-plate icons built into the icon library, blueprint line trucks and other line illustrations, section graphics and favicons, as SVG and PNG in Brand/Blueprint/. Send it work like \"make a Blueprint icon for invoices\", \"draw a blueprint line truck for the bonus card\", \"a section graphic for the guarantee\", or \"Blueprint favicon set\".",
+      "skills": [
+        "Blueprint",
+        "Icons",
+        "Illustration",
+        "SVG"
+      ],
+      "icon": "Spark",
+      "color": "#ff3d71",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-mockup-designer",
+      "name": "Blueprint Mockup Designer",
+      "role": "Brand · Blueprint boxes and mockups · opus-5-5 high",
+      "description": "Makes Driver Recruitment Blueprint product mockups: product box renders and variations on the chosen box-4-b, the offer stack (option C1) and device mockups, photoreal renders in Higgsfield (Nano Banana) and the code-built studio pipeline, exported in web-ready sizes. Send it work like \"a Blueprint box for the scripts bonus\", \"render the Blueprint box on a desk\", \"offer stack with the new bonus added\", or \"phone and laptop mockup of the Blueprint course\".",
+      "skills": [
+        "Blueprint",
+        "Product box",
+        "Mockups",
+        "Higgsfield"
+      ],
+      "icon": "Orb",
+      "color": "#ff3d71",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-page-builder",
+      "name": "Blueprint Page Builder",
+      "role": "Brand · Blueprint pages and GHL snippets · opus-5-5 high",
+      "description": "Builds or changes Driver Recruitment Blueprint web pages and sections from the component library in the Blueprint brand style, checks them on the local preview with screenshots at 390, 844 and 1440, and turns them into GHL-ready paste-in snippets with the GHL Build tools. Drafts beside the page for Petra to merge; never touches Driver Deploy. Send it work like \"build a Blueprint FAQ section\", \"add a bonus card for the scripts pack\", \"make the Blueprint thank-you page\", or \"GHL snippet for the new guarantee band\".",
+      "skills": [
+        "Blueprint",
+        "Web pages",
+        "GHL snippets",
+        "Mobile QA"
+      ],
+      "icon": "Fortress",
+      "color": "#ff3d71",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-motion-designer",
+      "name": "Blueprint Motion Designer",
+      "role": "Brand · Blueprint web motion · opus-5-5 high",
+      "description": "Makes Driver Recruitment Blueprint web animations in the brand's own patterns (the logo roll-out, the drafted headline word, the pencilled truck drawing on, step markers), as reduced-motion-safe CSS and JS with frame-exact recordings, plus short brand motion clips for the web. Send it work like \"animate the new Blueprint section heading\", \"a draw-on for the guarantee badge\", \"record the Blueprint logo roll-out as an MP4\", or \"make the bonus card truck draw in on scroll\". Not for GTD YouTube graphics, which the animate skill does.",
+      "skills": [
+        "Blueprint",
+        "Web animation",
+        "Reduced motion"
+      ],
+      "icon": "Drift",
+      "color": "#ff3d71",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "ac-brand-checker",
+      "name": "Alpha Carrier Brand Checker",
+      "role": "Brand · Alpha Carrier brand QA · sonnet-5 high",
+      "description": "Reviews any Alpha Carrier page, section, graphic, icon, mockup or GHL snippet against the Alpha Carrier Brand System (classic red and black for the upsell) and returns a pass/fail checklist with file:line and screenshot evidence. Send it work like \"brand check the Alpha Carrier upsell snippets\", \"is this icon in the Alpha round-2 style\", \"check the Alpha page on mobile\", or \"review the classic box render\". Read only; it reports and never writes.",
+      "skills": [
+        "Alpha Carrier",
+        "Brand QA",
+        "Read only"
+      ],
+      "icon": "Sentinel",
+      "color": "#ff3d71",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-graphic-designer",
+      "name": "Alpha Carrier Graphic Designer",
+      "role": "Brand · Alpha Carrier icons and illustration · opus-5-5 high",
+      "description": "Draws Alpha Carrier graphics in the chosen brand style: new icons in the round-2 set (geometric line plus one tapering brush stroke) built into the icon library, flat semi trucks and conveyor or warehouse scene parts, section graphics and favicons, in the classic red and black theme (or blue on request), as SVG and PNG in Brand/Alpha Carrier/. Send it work like \"make an Alpha Carrier icon for invoices\", \"a red flat semi facing right\", \"a section graphic for the Alpha upsell\", or \"Alpha favicon in red\".",
+      "skills": [
+        "Alpha Carrier",
+        "Icons",
+        "Illustration",
+        "SVG"
+      ],
+      "icon": "Spark",
+      "color": "#ff3d71",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-mockup-designer",
+      "name": "Alpha Carrier Mockup Designer",
+      "role": "Brand · Alpha Carrier boxes and mockups · opus-5-5 high",
+      "description": "Makes Alpha Carrier product mockups: product box renders and variations (the classic red and black box and the blue box, built in box-4-b's studio by the code pipeline), device mockups, and photoreal renders in Higgsfield (Nano Banana) when asked, exported in web-ready sizes. Send it work like \"an Alpha Carrier box with the new lesson count\", \"the classic Alpha box on a desk\", \"Alpha box beside the Blueprint box\", or \"phone mockup of the Alpha Carrier lessons\".",
+      "skills": [
+        "Alpha Carrier",
+        "Product box",
+        "Mockups",
+        "Higgsfield"
+      ],
+      "icon": "Orb",
+      "color": "#ff3d71",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-page-builder",
+      "name": "Alpha Carrier Page Builder",
+      "role": "Brand · Alpha Carrier pages and GHL snippets · opus-5-5 high",
+      "description": "Builds or changes Alpha Carrier web pages and sections (the classic red and black upsell first) from the existing page parts and tokens, checks them on the local preview with screenshots at 390, 844 and 1440, and turns them into GHL-ready paste-in snippets with the GHL Build tools. Drafts beside the page for Petra to merge; never touches Driver Deploy. Send it work like \"add an FAQ to the Alpha upsell\", \"make a standalone Alpha Carrier sales page\", \"change the Alpha buy card\", or \"GHL snippet for the new Alpha section\".",
+      "skills": [
+        "Alpha Carrier",
+        "Web pages",
+        "GHL snippets",
+        "Mobile QA"
+      ],
+      "icon": "Fortress",
+      "color": "#ff3d71",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-motion-designer",
+      "name": "Alpha Carrier Motion Designer",
+      "role": "Brand · Alpha Carrier web motion · opus-5-5 high",
+      "description": "Makes Alpha Carrier web animations in the brand's own patterns (flat semis driving the lanes, the conveyor loading boxes into the trailer, the header sign and progress bar), as reduced-motion-safe CSS and JS with frame-exact recordings, plus short brand motion clips for the web. Send it work like \"animate the new Alpha section\", \"make the trucks in the buy card loop smoother\", \"record the Alpha hero scene as an MP4\", or \"a conveyor loop for the Alpha ad\". Not for GTD YouTube graphics, which the animate skill does.",
+      "skills": [
+        "Alpha Carrier",
+        "Web animation",
+        "Reduced motion"
+      ],
+      "icon": "Drift",
+      "color": "#ff3d71",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "bp-creative-director",
+      "name": "Blueprint Creative Director",
+      "role": "Brand · leads the Blueprint team · opus-5-5 high",
+      "description": "Leads the Driver Recruitment Blueprint brand team. Send it any Blueprint design job, big or small; it reads the Blueprint Brand System, splits the job, hands the pieces to bp-graphic-designer, bp-mockup-designer, bp-page-builder and bp-motion-designer, has bp-brand-checker check the results, and returns one report. Send it work like \"make a Blueprint bonus card for the scripts pack with its icon and box\", \"Blueprint thank-you page with a short animation\", or \"new Blueprint offer section, ready for GHL\".",
+      "skills": [
+        "Blueprint",
+        "Team lead",
+        "Brand QA"
+      ],
+      "icon": "Crown",
+      "color": "#ff3d71",
+      "team": "blueprint",
+      "teamRole": "lead"
+    },
+    {
+      "id": "ac-creative-director",
+      "name": "Alpha Carrier Creative Director",
+      "role": "Brand · leads the Alpha Carrier team · opus-5-5 high",
+      "description": "Leads the Alpha Carrier brand team. Send it any Alpha Carrier design job, big or small; it reads the Alpha Carrier Brand System (classic red and black for the upsell), splits the job, hands the pieces to ac-graphic-designer, ac-mockup-designer, ac-page-builder and ac-motion-designer, has ac-brand-checker check the results, and returns one report. Send it work like \"a new Alpha Carrier section with its icon and a truck scene\", \"an Alpha box variation and the buy card that uses it\", or \"Alpha upsell change, ready for GHL\".",
+      "skills": [
+        "Alpha Carrier",
+        "Team lead",
+        "Brand QA"
+      ],
+      "icon": "Crown",
+      "color": "#ff3d71",
+      "team": "alpha-carrier",
+      "teamRole": "lead"
+    },
+    {
+      "id": "ring-organizer",
+      "name": "Ring Organizer",
+      "role": "GTD · keeps the OS ring in folders · sonnet-5 medium",
+      "description": "Files every item on the Agentic OS ring around Petra into the ring's own folder tree, organised the way Luke thinks about the work (project, then page or piece, then its versions; reports and plans by type, then year, then month), never by where the files sit in the vault. The OS runs it by itself when new items appear; send it work like \"organise the ring\", \"re-sort the ring from scratch\", or \"put the Blueprint pages under one folder\".",
+      "skills": [
+        "Ring folders",
+        "Organising",
+        "Runs on new files"
+      ],
+      "icon": "Rune",
+      "color": "#00c853"
+    }
+  ]
+}

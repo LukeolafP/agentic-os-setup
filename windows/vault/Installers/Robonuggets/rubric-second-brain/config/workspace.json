@@ -1,0 +1,78 @@
+{
+  "_note": "Mapped to Luke's Obsidian vault (GTD). root is absolute so the kit can move inside the vault; every other path is relative to it.",
+  "root": "__VAULT__",
+  "rootLabel": "GTD",
+  "memoryDir": "Memory",
+  "memoryIndex": "00 Facts Index.md",
+  "factsDir": "Memory/Facts",
+  "recallIndexes": [
+    "00 Master Index.md",
+    "Memory/Chats/00 Chat Index.md",
+    "Memory/Facts/00 Facts Index.md"
+  ],
+  "masterIndex": "00 Master Index.md",
+  "skillDirs": [
+    "Memory/skills"
+  ],
+  "projectsDir": "_no-project-prefixes",
+  "sharedPrefixes": [],
+  "excludeDirs": [
+    ".obsidian",
+    ".raw",
+    ".trash",
+    ".claude",
+    "rubric",
+    "rubric-second-brain",
+    "rubric-agentic-os",
+    ".connectors"
+  ],
+  "visibleRoots": [
+    "",
+    "Memory",
+    "Memory/Automations",
+    "Memory/Call To Actions",
+    "Content",
+    "Content/Instagram",
+    "Luke",
+    "GTD",
+    "GTD/Efficiency"
+  ],
+  "routing": {
+    "CLAUDE.md": [
+      "rule",
+      "rules",
+      "automation",
+      "automations",
+      "session",
+      "load",
+      "loads",
+      "vault",
+      "folder",
+      "folders",
+      "wiki",
+      "link",
+      "links",
+      "index",
+      "indexes",
+      "connected",
+      "sources",
+      "registry"
+    ],
+    "00 Master Index.md": [
+      "where",
+      "find",
+      "look",
+      "route",
+      "routing",
+      "dashboard",
+      "dashboards",
+      "transcript",
+      "transcripts",
+      "analytics",
+      "keyword",
+      "keywords",
+      "newsletter",
+      "newsletters"
+    ]
+  }
+}

@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/brand/fonts.css">
+<script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
+<style>
+  /* GTD viewer: one vault file, rendered the way Obsidian would show it.
+     Opened by the OS window system (windows.js) as a pop-up or a tab. */
+  /* Documents sit on the brand's Ice ground (2026 guideline, p5 and p7): navy ink, Trajan
+     titles, Proxima Nova text, Electric Blue for links and callouts. */
+  :root { --bg:#F5F8FF; --panel:#E9EFFD; --line:rgba(24,42,91,.12); --cream:#182A5B; --ink:#2B3B66; --mute:#5D6F9E;
+          --accent:#3164F5; --link:#3164F5; --navy:#182A5B; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; color:var(--cream);
+    background:radial-gradient(70% 50% at 0% 0%, #FFFFFF 0%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #F5F8FF 0%, #EEF3FF 100%) fixed; }
+  body { font:16px/1.7 'Proxima Nova', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:780px; margin:0 auto; padding:38px 30px 90px; }
+  .crumb { font:600 10.5px 'Proxima Nova', sans-serif; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+  .crumb a { color:var(--accent); text-decoration:none; } .crumb a:hover { color:var(--navy); }
+  h1.title { font:700 30px/1.15 'Trajan Pro', serif; text-transform:uppercase; letter-spacing:.03em; color:var(--navy); margin:0 0 20px; }
+  .props { border:1px solid var(--line); border-radius:18px; margin:0 0 28px; font:13px 'Proxima Nova', sans-serif; overflow:hidden;
+    background:#fff; box-shadow:0 10px 30px rgba(24,42,91,.08); }
+  .props div { display:grid; grid-template-columns:150px 1fr; border-top:1px solid var(--line); }
+  .props div:first-child { border-top:0; }
+  .props b { font-weight:600; color:var(--mute); padding:8px 14px; background:#F2F6FF; letter-spacing:.02em; }
+  .props span { padding:8px 14px; word-break:break-word; color:var(--ink); }
+  .md h1, .md h2 { font-family:'Trajan Pro', serif; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--navy);
+    line-height:1.2; margin:1.7em 0 .6em; }
+  .md h3, .md h4 { font-family:'Proxima Nova', sans-serif; font-weight:800; color:var(--navy); line-height:1.25; margin:1.5em 0 .5em; }
+  .md h1 { font-size:24px; } .md h2 { font-size:19px; border-bottom:1px solid var(--line); padding-bottom:8px; }
+  .md h3 { font-size:17px; } .md h4 { font-size:15px; color:var(--mute); }
+  .md p, .md li { color:var(--ink); }
+  .md strong { color:var(--navy); font-weight:800; }
+  .md a { color:var(--link); text-decoration:none; font-weight:600; border-bottom:1px solid rgba(49,100,245,.3); cursor:pointer; }
+  .md a:hover { color:var(--navy); border-color:var(--navy); }
+  .md a.wl.missing { color:var(--mute); border-bottom-style:dashed; font-weight:400; }
+  .md code { font:13px 'JetBrains Mono', monospace; background:var(--panel); color:var(--navy); padding:2px 6px; border-radius:6px; }
+  .md pre { background:#182A5B; color:#F5F8FF; border-radius:14px; padding:16px 18px; overflow:auto; }
+  .md pre code { background:none; padding:0; color:inherit; }
+  .md blockquote { margin:1.1em 0; padding:12px 18px; border-left:3px solid var(--accent); background:#fff; color:var(--ink);
+    border-radius:0 16px 16px 0; box-shadow:0 8px 24px rgba(24,42,91,.07); }
+  .md blockquote.callout .ct { font:600 11px 'Proxima Nova', sans-serif; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:3px; }
+  .md table { border-collapse:separate; border-spacing:0; width:100%; margin:1.3em 0; font:13.5px/1.5 'Proxima Nova', sans-serif; display:block; overflow-x:auto;
+    border:1px solid var(--line); border-radius:14px; background:#fff; }
+  .md th, .md td { border-top:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top; color:var(--ink); }
+  .md tr:first-child th, .md tr:first-child td { border-top:0; }
+  .md th { background:var(--navy); color:#F5F8FF; font-weight:600; letter-spacing:.02em; }
+  .md img, .md video { max-width:100%; border-radius:14px; }
+  .md hr { border:0; border-top:1px solid var(--line); margin:2em 0; }
+  .md input[type=checkbox] { accent-color:var(--accent); }
+  .md .tag { font:600 12px 'Proxima Nova', sans-serif; color:var(--accent); background:rgba(49,100,245,.1); padding:1px 9px; border-radius:999px; }
+  .pdf canvas { display:block; width:100%; margin:0 auto 16px; border-radius:6px; box-shadow:0 10px 30px rgba(24,42,91,.18); background:#fff; }
+  .msg { color:var(--mute); font:14px 'Proxima Nova', sans-serif; padding:40px 0; text-align:center; }
+  pre.raw { white-space:pre-wrap; font:13px/1.6 'JetBrains Mono', monospace; color:var(--ink); }
+  .media { text-align:center; } .media img, .media video { max-width:100%; max-height:86vh; border-radius:14px; }
+</style>
+</head>
+<body>
+<div class="wrap" id="root"><div class="msg">Loading…</div></div>
+<script>
+(function () {
+  const qs = new URLSearchParams(location.search);
+  const path = qs.get('path') || '';
+  const root = document.getElementById('root');
+  const ext = (path.split('.').pop() || '').toLowerCase();
+  const name = path.split('/').pop().replace(/\.md$/i, '');
+  const vurl = p => '/vault/' + p.split('/').map(encodeURIComponent).join('/');
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const os = () => { try { return window.parent && window.parent !== window ? window.parent : null; } catch { return null; } };
+  document.title = name || 'Viewer';
+  // tell the window system what this is called
+  try { os() && os().osRetitle && os().osRetitle(window, name); } catch {}
+
+  function crumb() {
+    const parts = path.split('/').slice(0, -1);
+    return `<div class="crumb">${parts.map(esc).join(' / ') || 'Vault'}</div>`;
+  }
+  async function find(n) {
+    try { const r = await fetch('/api/vault-find?name=' + encodeURIComponent(n) + '&from=' + encodeURIComponent(path)); const d = await r.json(); return d.path || null; }
+    catch { return null; }
+  }
+  function openPath(p) {
+    const parent = os();
+    if (parent && parent.osOpen) parent.osOpen({ path: p, replace: window });
+    else location.search = '?path=' + encodeURIComponent(p);
+  }
+  function openUrl(u) {
+    const parent = os();
+    if (parent && parent.osOpen) parent.osOpen({ url: u, mode: 'popup' });
+    else window.open(u, '_blank');
+  }
+
+  /* ------------------------------------------------------------ markdown */
+  function frontmatter(text) {
+    const m = text.match(/^---\n([\s\S]*?)\n---\n?/);
+    if (!m) return { props: [], body: text };
+    const props = [];
+    let cur = null;
+    for (const line of m[1].split('\n')) {
+      const kv = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+      if (kv) { cur = { k: kv[1], v: kv[2].replace(/^["']|["']$/g, '') }; props.push(cur); }
+      else if (cur && /^\s+-\s+/.test(line)) cur.v += (cur.v ? ', ' : '') + line.replace(/^\s+-\s+/, '');
+      else if (cur && line.trim()) cur.v += ' ' + line.trim();
+    }
+    return { props, body: text.slice(m[0].length) };
+  }
+  async function renderMarkdown(text) {
+    const { props, body } = frontmatter(text);
+    let md = body;
+    // embeds first: ![[image.png|300]] -> <img>, ![[Note]] -> a link
+    const embeds = [...md.matchAll(/!\[\[([^\]]+?)\]\]/g)];
+    for (const m of embeds) {
+      const [target, size] = m[1].split(/\\?\|/);
+      const p = await find(target);
+      let html;
+      if (p && /\.(png|jpe?g|gif|webp|svg)$/i.test(p)) html = `<img src="${vurl(p)}" alt="${esc(target)}"${/^\d+$/.test(size || '') ? ` width="${size}"` : ''}>`;
+      else if (p && /\.(mp4|mov|webm)$/i.test(p)) html = `<video src="${vurl(p)}" controls></video>`;
+      else html = `<a class="wl${p ? '' : ' missing'}" data-path="${esc(p || '')}">${esc(target)}</a>`;
+      md = md.replace(m[0], html);
+    }
+    // links: [[Target]], [[Target|alias]], [[Target\|alias]] (escaped in tables), [[Target#Heading]]
+    md = md.replace(/\[\[([^\]]+?)\]\]/g, (all, inner) => {
+      const [target, alias] = inner.split(/\\?\|/);
+      return `<a class="wl" data-target="${esc(target.replace(/\\$/, ''))}">${esc((alias || target.split('#')[0].split('/').pop()).replace(/\\$/, ''))}</a>`;
+    });
+    // callouts: > [!note] Title
+    md = md.replace(/^>\s*\[!(\w+)\][-+]?\s*(.*)$/gm, (a, kind, title) => `> <span class="ct">${esc(title || kind)}</span>`);
+    marked.setOptions({ gfm: true, breaks: false });
+    let html = marked.parse(md);
+    html = DOMPurify.sanitize(html, { ADD_ATTR: ['data-target', 'data-path', 'target'] });
+    // #tags outside code
+    const shell = document.createElement('div');
+    shell.className = 'md'; shell.innerHTML = html;
+    shell.querySelectorAll('blockquote').forEach(b => { if (b.querySelector('.ct')) b.classList.add('callout'); });
+    const propsHtml = props.length ? `<div class="props">${props.map(p => `<div><b>${esc(p.k)}</b><span>${esc(p.v || '—')}</span></div>`).join('')}</div>` : '';
+    // most notes open with a heading that repeats their name: show it once
+    const firstH = shell.firstElementChild;
+    const dup = firstH && /^H[12]$/.test(firstH.tagName) && firstH.textContent.trim().toLowerCase() === name.trim().toLowerCase();
+    if (dup) firstH.remove();
+    root.innerHTML = crumb() + `<h1 class="title">${esc(name)}</h1>` + propsHtml;
+    root.appendChild(shell);
+    shell.addEventListener('click', async e => {
+      const a = e.target.closest('a'); if (!a) return;
+      e.preventDefault();
+      if (a.dataset.path) return openPath(a.dataset.path);
+      if (a.dataset.target !== undefined) {
+        const p = await find(a.dataset.target);
+        if (p) openPath(p); else { a.classList.add('missing'); a.title = 'No note called ' + a.dataset.target; }
+        return;
+      }
+      const href = a.getAttribute('href') || '';
+      if (/^https?:/i.test(href)) return openUrl(href);
+      if (href.startsWith('#')) { const t = document.getElementById(href.slice(1)); t && t.scrollIntoView({ behavior: 'smooth' }); return; }
+      if (href) { const p = await find(decodeURIComponent(href)); if (p) openPath(p); }
+    });
+  }
+
+  /* ----------------------------------------------------------------- pdf */
+  async function renderPdf() {
+    root.innerHTML = crumb() + `<h1 class="title">${esc(name)}</h1><div class="pdf" id="pdf"><div class="msg">Loading PDF…</div></div>`;
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+    s.onload = async () => {
+      const lib = window['pdfjs-dist/build/pdf'];
+      lib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      const box = document.getElementById('pdf');
+      try {
+        const doc = await lib.getDocument(vurl(path)).promise;
+        box.innerHTML = '';
+        const width = Math.min(1100, root.clientWidth - 56);
+        for (let i = 1; i <= doc.numPages; i++) {
+          const page = await doc.getPage(i);
+          const v1 = page.getViewport({ scale: 1 });
+          const scale = (width / v1.width) * Math.min(2, devicePixelRatio || 1);
+          const vp = page.getViewport({ scale });
+          const c = document.createElement('canvas');
+          c.width = vp.width; c.height = vp.height;
+          box.appendChild(c);
+          await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+        }
+      } catch (e) { box.innerHTML = `<div class="msg">This PDF could not be read: ${esc(e.message)}</div>`; }
+    };
+    document.head.appendChild(s);
+    root.style.maxWidth = '1160px';
+  }
+
+  /* ------------------------------------------------------------------ go */
+  (async () => {
+    if (!path) { root.innerHTML = '<div class="msg">No file given.</div>'; return; }
+    if (ext === 'pdf') return renderPdf();
+    if (/^(png|jpe?g|gif|webp|svg)$/.test(ext)) { root.innerHTML = crumb() + `<div class="media"><img src="${vurl(path)}" alt=""></div>`; return; }
+    if (/^(mp4|mov|webm)$/.test(ext)) { root.innerHTML = crumb() + `<div class="media"><video src="${vurl(path)}" controls autoplay></video></div>`; return; }
+    if (/^html?$/.test(ext)) { location.replace(vurl(path)); return; }
+    let text;
+    try { const r = await fetch(vurl(path)); if (!r.ok) throw new Error(r.status === 403 ? 'not allowed' : 'not found'); text = await r.text(); }
+    catch (e) { root.innerHTML = `<div class="msg">Could not open ${esc(path)}: ${esc(e.message)}</div>`; return; }
+    if (ext === 'md') return renderMarkdown(text);
+    root.innerHTML = crumb() + `<h1 class="title">${esc(name)}</h1><pre class="raw">${esc(text)}</pre>`;
+  })();
+})();
+</script>
+</body>
+</html>

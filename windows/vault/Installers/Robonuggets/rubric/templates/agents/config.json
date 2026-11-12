@@ -1,0 +1,200 @@
+{
+  "brandName": "GTD Agents",
+  "agents": [
+    {
+      "id": "gtd-vault",
+      "name": "Petra · GTD Vault",
+      "role": "The main agent: the voice you talk to, running Claude Code in the vault on Opus 5.5 high. Hands work to the other agents.",
+      "color": "#ff6b1a",
+      "icon": "Crown"
+    },
+    {
+      "id": "ig-vault-sync",
+      "name": "IG Vault Sync",
+      "role": "launchd job, daily 06:15. Transcribes reels and refreshes analytics into the vault.",
+      "color": "#58abf5",
+      "icon": "Echo"
+    },
+    {
+      "id": "weekly-content-post",
+      "name": "Weekly Content Post",
+      "role": "Cloud routine, Mondays 9:00 CT. Paused since 13 Oct 2026.",
+      "color": "#b47aff",
+      "icon": "Drift"
+    },
+    {
+      "id": "case-study-logos",
+      "name": "Case Study Logos",
+      "role": "Goes through every client case study in Google Drive (GTD Context / Case Studies), finds the highest quality logo for each client company, s",
+      "color": "#ff3d71",
+      "icon": "Halo"
+    },
+    {
+      "id": "hook-analyst",
+      "name": "Hook Analyst",
+      "role": "Reads the Instagram analytics notes for a given month and ranks that month's reels by completion, shares and saves, with the hook line of th",
+      "color": "#2196f3",
+      "icon": "Sentinel"
+    },
+    {
+      "id": "script-reviewer",
+      "name": "Script Reviewer",
+      "role": "Reviews the Instagram scripts in a given date range against the Writing Instagram Content rules, benchmarking hooks against the month's best",
+      "color": "#fdd835",
+      "icon": "Sage"
+    },
+    {
+      "id": "cta-auditor",
+      "name": "CTA Auditor",
+      "role": "Checks every Instagram script's CTA keyword against the Call To Actions notes and the CTA keyword map, and lists clashes and keywords that s",
+      "color": "#2196f3",
+      "icon": "Warden"
+    },
+    {
+      "id": "brand-checker",
+      "name": "Brand Checker",
+      "role": "Reads the brand guideline PDF in the Brand folder and lists the rules a script, caption or thumbnail must follow, as a checklist. Send it wo",
+      "color": "#ff3d71",
+      "icon": "Halo"
+    },
+    {
+      "id": "team-capacity",
+      "name": "Team Capacity",
+      "role": "Reads the video team's Efficiency snapshots and works out how many reels and long-form videos the team can finish per week. Send it work lik",
+      "color": "#00c853",
+      "icon": "Fortress"
+    },
+    {
+      "id": "scorecard-tracker",
+      "name": "Scorecard Tracker",
+      "role": "Reads Luke's Organic Growth Manager scorecard and responsibilities and lists every target with what the vault shows about progress on it. Se",
+      "color": "#ff9100",
+      "icon": "Crown"
+    },
+    {
+      "id": "bp-brand-checker",
+      "name": "Blueprint Brand Checker",
+      "role": "Reviews any Driver Recruitment Blueprint page, section, graphic, icon, mockup or GHL snippet against the Blueprint Brand System and returns ",
+      "color": "#ff3d71",
+      "icon": "Sentinel",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-graphic-designer",
+      "name": "Blueprint Graphic Designer",
+      "role": "Draws Driver Recruitment Blueprint graphics in the chosen brand style: new stencil-plate icons built into the icon library, blueprint line t",
+      "color": "#ff3d71",
+      "icon": "Spark",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-mockup-designer",
+      "name": "Blueprint Mockup Designer",
+      "role": "Makes Driver Recruitment Blueprint product mockups: product box renders and variations on the chosen box-4-b, the offer stack (option C1) an",
+      "color": "#ff3d71",
+      "icon": "Orb",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-page-builder",
+      "name": "Blueprint Page Builder",
+      "role": "Builds or changes Driver Recruitment Blueprint web pages and sections from the component library in the Blueprint brand style, checks them o",
+      "color": "#ff3d71",
+      "icon": "Fortress",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-motion-designer",
+      "name": "Blueprint Motion Designer",
+      "role": "Makes Driver Recruitment Blueprint web animations in the brand's own patterns (the logo roll-out, the drafted headline word, the pencilled t",
+      "color": "#ff3d71",
+      "icon": "Drift",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "ac-brand-checker",
+      "name": "Alpha Carrier Brand Checker",
+      "role": "Reviews any Alpha Carrier page, section, graphic, icon, mockup or GHL snippet against the Alpha Carrier Brand System (classic red and black ",
+      "color": "#ff3d71",
+      "icon": "Sentinel",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-graphic-designer",
+      "name": "Alpha Carrier Graphic Designer",
+      "role": "Draws Alpha Carrier graphics in the chosen brand style: new icons in the round-2 set (geometric line plus one tapering brush stroke) built i",
+      "color": "#ff3d71",
+      "icon": "Spark",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-mockup-designer",
+      "name": "Alpha Carrier Mockup Designer",
+      "role": "Makes Alpha Carrier product mockups: product box renders and variations (the classic red and black box and the blue box, built in box-4-b's ",
+      "color": "#ff3d71",
+      "icon": "Orb",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-page-builder",
+      "name": "Alpha Carrier Page Builder",
+      "role": "Builds or changes Alpha Carrier web pages and sections (the classic red and black upsell first) from the existing page parts and tokens, che",
+      "color": "#ff3d71",
+      "icon": "Fortress",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-motion-designer",
+      "name": "Alpha Carrier Motion Designer",
+      "role": "Makes Alpha Carrier web animations in the brand's own patterns (flat semis driving the lanes, the conveyor loading boxes into the trailer, t",
+      "color": "#ff3d71",
+      "icon": "Drift",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "bp-creative-director",
+      "name": "Blueprint Creative Director",
+      "role": "Leads the Driver Recruitment Blueprint brand team. Send it any Blueprint design job, big or small; it reads the Blueprint Brand System, spli",
+      "color": "#ff3d71",
+      "icon": "Crown",
+      "team": "blueprint",
+      "teamRole": "lead"
+    },
+    {
+      "id": "ac-creative-director",
+      "name": "Alpha Carrier Creative Director",
+      "role": "Leads the Alpha Carrier brand team. Send it any Alpha Carrier design job, big or small; it reads the Alpha Carrier Brand System (classic red",
+      "color": "#ff3d71",
+      "icon": "Crown",
+      "team": "alpha-carrier",
+      "teamRole": "lead"
+    },
+    {
+      "id": "ring-organizer",
+      "name": "Ring Organizer",
+      "role": "Files every item on the Agentic OS ring around Petra into the ring's own folder tree, organised the way Luke thinks about the work (project,",
+      "color": "#00c853",
+      "icon": "Rune"
+    }
+  ]
+}
