@@ -250,7 +250,7 @@ function organizeRing(all) {
   try {
     child = spawn(CLAUDE_BIN, args, { cwd: VAULT_ROOT, windowsHide: true,
       env: { ...process.env, GTD_JOB: '1', RUBRIC_AGENT_ID: 'ring-organizer' }, stdio: ['ignore', 'pipe', 'pipe'] });
-  } catch (e) { organizer.running = false; organizer.fails++; log.end('SPAWN ERROR: ' + e.message); return false; }
+  } catch (e) { organizer.running = false; organizer.ended = Date.now(); organizer.fails++; log.end('SPAWN ERROR: ' + e.message); return false; }  /* ended set so the back-off applies (16 Nov 2026: without it a failed spawn retried every 30 s, 9,000 times) */
   const timer = setTimeout(() => child.kill('SIGTERM'), 20 * 60 * 1000);
   child.stdout.on('data', d => { if (organizer.result.length < 20000) organizer.result += d; log.write(d); });
   child.stderr.pipe(log, { end: false });

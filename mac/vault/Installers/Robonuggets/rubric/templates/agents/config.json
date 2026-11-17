@@ -70,6 +70,145 @@
       "role": "Reads Luke's Organic Growth Manager scorecard and responsibilities and lists every target with what the vault shows about progress on it. Se",
       "color": "#ff9100",
       "icon": "Crown"
+    },
+    {
+      "id": "bp-brand-checker",
+      "name": "Blueprint Brand Checker",
+      "role": "Reviews any Driver Recruitment Blueprint page, section, graphic, icon, mockup or GHL snippet against the Blueprint Brand System and returns ",
+      "color": "#ff3d71",
+      "icon": "Sentinel",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-graphic-designer",
+      "name": "Blueprint Graphic Designer",
+      "role": "Draws Driver Recruitment Blueprint graphics in the chosen brand style: new stencil-plate icons built into the icon library, blueprint line t",
+      "color": "#ff3d71",
+      "icon": "Spark",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-mockup-designer",
+      "name": "Blueprint Mockup Designer",
+      "role": "Makes Driver Recruitment Blueprint product mockups: product box renders and variations on the chosen box-4-b, the offer stack (option C1) an",
+      "color": "#ff3d71",
+      "icon": "Orb",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-page-builder",
+      "name": "Blueprint Page Builder",
+      "role": "Builds or changes Driver Recruitment Blueprint web pages and sections from the component library in the Blueprint brand style, checks them o",
+      "color": "#ff3d71",
+      "icon": "Fortress",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-motion-designer",
+      "name": "Blueprint Motion Designer",
+      "role": "Makes Driver Recruitment Blueprint web animations in the brand's own patterns (the logo roll-out, the drafted headline word, the pencilled t",
+      "color": "#ff3d71",
+      "icon": "Drift",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "ac-brand-checker",
+      "name": "Alpha Carrier Brand Checker",
+      "role": "Reviews any Alpha Carrier page, section, graphic, icon, mockup or GHL snippet against the Alpha Carrier Brand System (classic red and black ",
+      "color": "#ff3d71",
+      "icon": "Sentinel",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-graphic-designer",
+      "name": "Alpha Carrier Graphic Designer",
+      "role": "Draws Alpha Carrier graphics in the chosen brand style: new icons in the round-2 set (geometric line plus one tapering brush stroke) built i",
+      "color": "#ff3d71",
+      "icon": "Spark",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-mockup-designer",
+      "name": "Alpha Carrier Mockup Designer",
+      "role": "Makes Alpha Carrier product mockups: product box renders and variations (the classic red and black box and the blue box, built in box-4-b's ",
+      "color": "#ff3d71",
+      "icon": "Orb",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-page-builder",
+      "name": "Alpha Carrier Page Builder",
+      "role": "Builds or changes Alpha Carrier web pages and sections (the classic red and black upsell first) from the existing page parts and tokens, che",
+      "color": "#ff3d71",
+      "icon": "Fortress",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-motion-designer",
+      "name": "Alpha Carrier Motion Designer",
+      "role": "Makes Alpha Carrier web animations in the brand's own patterns (flat semis driving the lanes, the conveyor loading boxes into the trailer, t",
+      "color": "#ff3d71",
+      "icon": "Drift",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "bp-creative-director",
+      "name": "Blueprint Creative Director",
+      "role": "Leads the Driver Recruitment Blueprint brand team. Send it any Blueprint design job, big or small; it reads the Blueprint Brand System, spli",
+      "color": "#ff3d71",
+      "icon": "Crown",
+      "team": "blueprint",
+      "teamRole": "lead"
+    },
+    {
+      "id": "ac-creative-director",
+      "name": "Alpha Carrier Creative Director",
+      "role": "Leads the Alpha Carrier brand team. Send it any Alpha Carrier design job, big or small; it reads the Alpha Carrier Brand System (classic red",
+      "color": "#ff3d71",
+      "icon": "Crown",
+      "team": "alpha-carrier",
+      "teamRole": "lead"
+    },
+    {
+      "id": "ring-organizer",
+      "name": "Ring Organizer",
+      "role": "Files every item on the Agentic OS ring around Petra into the ring's own folder tree, organised the way Luke thinks about the work (project,",
+      "color": "#00c853",
+      "icon": "Rune"
+    },
+    {
+      "id": "chrome-operator",
+      "name": "Chrome Operator",
+      "role": "Does one small batch of browser work in Chrome (Claude in Chrome tools) and reports back in text only, so its screenshots never enter the se",
+      "color": "#00c853",
+      "icon": "Drift"
+    },
+    {
+      "id": "image-viewer",
+      "name": "Image Viewer",
+      "role": "Looks at photos, screenshots or rendered images by file path and answers a question about them in text, so the images never enter the sessio",
+      "color": "#00c853",
+      "icon": "Orb"
     }
   ]
 }

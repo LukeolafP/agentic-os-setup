@@ -1,7 +1,7 @@
 ---
 type: index
 scope: agents
-updated: 2026-10-30
+updated: 2026-11-17
 maintained: by the agent-creator skill, in the same turn an agent is made, changed or removed
 ---
 
@@ -34,8 +34,10 @@ This note is not an agent: it has no `name` in its frontmatter, so Claude Code s
 | [[bp-page-builder\|Blueprint Page Builder]] | Brand | Builds Blueprint pages and sections from the component library, checks them at 390/844/1440, makes GHL-ready snippets; drafts in `.work/` for Petra to merge |
 | [[brand-checker\|Brand Checker]] | Brand | Lists the brand guideline rules a script, caption or thumbnail must follow, as a checklist. Read only |
 | [[case-study-logos\|Case Study Logos]] | Brand | Finds each client's best logo, saves it beside the case study in Drive and puts it at the top of the doc |
+| [[chrome-operator\|Chrome Operator]] | GTD | Does one small batch of Chrome work (Driver Deploy, ManyChat, any site) as a subagent and reports in text only, so screenshots never enter the session that sent it. Every Chrome job goes through it |
 | [[cta-auditor\|CTA Auditor]] | Content | Checks every script's CTA keyword against the Call To Actions notes and the keyword map; lists clashes and dead keywords. Read only |
 | [[hook-analyst\|Hook Analyst]] | Content | Ranks a month's reels by completion, shares and saves, with the hooks of the top five and bottom five. Read only |
+| [[image-viewer\|Image Viewer]] | GTD | Looks at photos and screenshots by file path as a subagent and answers in text, so images never enter Petra's chat or a manager's session. Read only |
 | [[scorecard-tracker\|Scorecard Tracker]] | Luke | Lists every scorecard target with what the vault shows about progress on it. Read only |
 | [[ring-organizer\|Ring Organizer]] | GTD | Files every item on the OS ring into the ring's own folder tree (project, page, versions; reports by type, year, month), apart from the vault's folders. The OS runs it on new items |
 | [[script-reviewer\|Script Reviewer]] | Scripting | Reviews scripts in a date range against [[Writing Instagram Content]], benchmarking hooks against the month's best. Read only |

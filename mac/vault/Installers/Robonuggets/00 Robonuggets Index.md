@@ -1,7 +1,7 @@
 ---
 type: index
 indexes: Robonuggets
-updated: 2026-10-20
+updated: 2026-10-29
 maintained: by hand, on request
 ---
 
@@ -47,7 +47,7 @@ The brain side of this is `rubric-second-brain/public/_embed.js`.
 ## The look: GTD brand
 
 Since 19 October 2026 the Agentic OS and the Second Brain follow the 2026 brand guideline,
-`Brand/GTD update BG-2 (1).pdf`, in place of RoboNuggets' black and orange.
+`Brand/GTD/GTD update BG-2 (1).pdf`, in place of RoboNuggets' black and orange.
 
 - **Ground:** Electric Blue light falling to Deep Navy, with the brand mark's vertical
   lines fading in from each side (guideline p1, p22, p27). On the OS the lines are on the
@@ -109,6 +109,32 @@ NOW line between them. Past events dim and say how long ago; coming ones say how
 until. The other time zones and the year grid were removed at Luke's request. The feed
 keeps the past 2 hours: the snapshot fallback in `server.js`, and `timeMin` in
 `tools/google-calendar.js` once Google sign-in is done.
+
+## Resizing
+
+Since 2 November 2026 the board follows the pane live as it is resized (an Obsidian split,
+a sidebar, the window): `relayout()` in `dashboard.html` recomputes the grid, the shape (wide,
+square, tall), the cards, the ring and the chat panel every frame. It used to reload the page
+once the size settled (`windows.js`), which flashed the bare page.
+
+## Ring folders
+
+Since 30 October 2026 the ring around Petra shows folders, not loose files: one ball per
+top folder, with a count and its name. Hover a folder and it opens out of the ring into a
+tree: a column of its folders and files, joined by branches; hover a folder in the tree and
+its column opens beside it, down to the versions. Click a file to open it; click the ball to
+keep the tree open (Esc or a click elsewhere closes it). Search (`/`) lights up the folders
+holding a match and marks the matches inside.
+
+The tree is the ring's own, organised by what the work is for (project, then page or piece,
+then versions; reports and plans by type, then year, then month), never by the vault's
+folders. It lives in `rubric-agentic-os/ring/layout.json` and is written only by
+[[ring-organizer|Ring Organizer]] through `tools/ring-layout.mjs` (`pending`, `tree`, `apply`).
+New items show in **Unsorted** until it files them: the OS server runs it by itself once an
+item has waited a minute (one run at a time, at least three minutes apart; after three
+failed runs it waits half an hour). `POST /api/ring-organize` runs it now, and `{"all":true}`
+re-sorts everything. Runs log to `rubric-agentic-os/os-runs/ring-organizer-*.log`; they are not
+Petra-queued jobs, so they file no report.
 
 ## Petra's chat: talk or type
 
@@ -182,6 +208,25 @@ Since 20 October 2026, clicking Petra offers **Talk** (the microphone, as before
   steps through tabs. A manager reports to the tab that started it, and reopens it if you
   closed it. Open tabs are kept in `~/Coding/jarvis/.gtd-jobs/chat-tabs.json` and come back
   after a bridge restart. Added 22 Oct 2026; tested with two tabs answering at the same time.
+  Each tab shows most of its name (up to 240px) and the row scrolls sideways; hovering a
+  cut-off tab shows its whole name at once in a pop-up under the tab bar (30 Oct 2026). The
+  name says what the chat is doing now: the bridge asks Haiku for a few words over the chat's
+  latest stretch each time you send and each time Petra finishes (about 2 s; no tools, hooks or
+  saved transcript; `GTD_SUMMARY_MODEL` changes the model). Until then it shows the first message.
+  Each tab is coloured by what its chat is doing (4 Nov 2026): **orange** Petra or one of its
+  managers is working, **yellow** it is waiting on you (a question or permission card, a manager
+  question unanswered for 30 s, or Petra's reply ends asking you something), **red** the last turn
+  or one of its managers failed since you last wrote, **green** it finished something you have
+  not looked at yet. The bridge works the state out (`tabState` in `bridge/chat.mjs`); the page
+  reports which tab is on screen.
+- **Full screen, tabs side by side.** The ⤢ button in the chat header fills the whole window
+  with the chat. Drag a tab out of the tab bar onto the board to open it full screen beside the
+  current one, or onto **+** at the left of the columns for another; up to 4 columns, as many
+  as fit at 330 px each. Drop a tab on a column to swap or replace it; a column's ✕ closes the
+  column, not the chat. Clicking a column makes it the one you type into. Shrinking back shows
+  the first column's tab in the side panel; full screen again brings back the same columns
+  and focus, also after a reload (`os-chat-split`, `os-chat-split-focus`, `os-chat-full` in
+  the page's storage). Added 29 Oct 2026; tested headless.
 - **Managers.** For any real piece of work Petra starts a manager: a clone of her (a full
   Claude Code session with your settings and her rules) that works in the background, so
   she stays free to talk. Several run at once (4 at a time, more queue). They coordinate
@@ -199,6 +244,170 @@ Since 20 October 2026, clicking Petra offers **Talk** (the microphone, as before
   `rubric-agentic-os/.chat.before-managers.js`, `.jarvis.before-chatvoice.js`.
 - Managers are not filed as reports by [[Agent Report Filing]] (that covers queued
   background agents); their reports live in Petra's chat.
+
+## OpenClicky: talking to Petra from anywhere on the Mac (5 Nov 2026)
+
+[OpenClicky](https://github.com/prasanthsasikumar/openclicky) (0.10.2, `/Applications/OpenClicky.app`)
+is a menu-bar app: hold **⌃ control + ⌥ option**, ask out loud, and it answers in a voice and
+flies a pointer to the thing on screen. Hold **fn** to dictate into any text box. It is set up so
+that the ⌃⌥ question goes to **Petra**, and nothing goes to OpenClicky's own servers.
+
+- **How:** the app sends every model call to one backend, `backendUrl` in
+  `~/.openclicky/shell.json`. That is now `http://127.0.0.1:8793`, a small server on this Mac,
+  [`~/Coding/jarvis/clicky/server.mjs`](file://__HOME__/Coding/jarvis/clicky/server.mjs).
+  No app rebuild was needed.
+- **The ⌃⌥ question** goes through the JARVIS bridge into Petra's own **OpenClicky tab** on the
+  OS, with the screenshots, the way a typed message would. She answers with every tool, manager and
+  agent she has; managers she starts attach to that tab and show on the dashboard with its tab
+  colours. Each message carries OpenClicky's reply rules (short spoken answer, `[POINT:x,y:label]`
+  for the pointer, `[ACTION: …]` lines for the app's quick actions such as opening an app), so
+  pointing and quick actions work as with OpenClicky's own Claude. Real work is handed to a manager
+  and she says it has started.
+- **Her voice:** `/tts` is Petra's own Voxtral voice through the bridge. Each sentence is made
+  while she is still writing, so the app's 2.5 s deadline for the first piece is met from the
+  cache (15 ms in testing). If a piece is late the app speaks the rest with Kokoro or the Mac voice.
+- **Everything else** (pointing refinement, drawings, dictation clean-up) is a one-shot Claude call
+  through the Agent SDK, no tools: Sonnet 5, or Haiku 4.5 for clean-up. Dictation itself is
+  Parakeet inside the app, offline.
+- **Tested 5 Nov:** a pointing question came back in 4.5 s with the pointer on the button
+  (1160,721 against 1160,722); "open Spotify" came back as the app's `open_app` action in 1.5 s;
+  "get a manager to count the Facts notes" queued a manager on the OpenClicky tab in 6.6 s.
+- **Not available:** OpenClicky's hands-free "Hey Clicky" mode runs on OpenAI Realtime, which this
+  backend does not offer; its Codex agent lane needs the `openclicky` CLI, which is not installed
+  (Petra does that work instead).
+- **Runs as** launchd `com.gettruckdrivers.petra-clicky` once installed (plist in
+  `~/Coding/jarvis/clicky/`); log `clicky/clicky.log`; tab id kept in `clicky/state.json`, a new
+  OpenClicky tab is made if that one is closed.
+- **Back to OpenClicky's own servers:** copy `~/.openclicky/shell.before-petra.json` over
+  `shell.json`; the app picks the change up by itself.
+- Source read for the protocol: `~/Coding/openclicky-src` (a clone, nothing built or run from it).
+
+## The Agentic OS program: our own OpenClicky (7 Nov 2026)
+
+Luke's call: no separate helper apps. OpenClicky is forked and made ours, and it **is** the
+Agentic OS program. Petra Computer (an earlier menu-bar helper) was dropped the same day.
+
+- **Source:** `~/Coding/agentic-os-app`, a fork of
+  [prasanthsasikumar/openclicky](https://github.com/prasanthsasikumar/openclicky) on branch
+  `agentic-os` (remote `upstream` for its updates). Built with Xcode 27.2 into `/Applications/Agentic OS.app`
+  (bundle `com.gettruckdrivers.agentic-os`) by `scripts/build-agentic-os.sh`, without the hardened
+  runtime (the bundled Sparkle would not load otherwise). It signs with the local "Agentic OS
+  Signing" certificate (`scripts/make-signing-cert.sh`, run once by Luke) or an Apple Development
+  one, so the macOS permissions survive rebuilds; an ad-hoc build asks for them again every time.
+  Auto-updates from upstream OpenClicky are off.
+- **Opening the program** starts what the OS needs: kicks any launchd dashboard or the bridge
+  that is down, and runs Petra's voice backend (`~/Coding/jarvis/clicky/server.mjs`) as its own
+  child while it is open. It opens the OS dashboard in its own window (Dock icon while the
+  window is open; "Open Agentic OS" in its menu). The OS still opens in Obsidian and at
+  localhost.
+- **⌃⌥, the pointer and fn dictation** are OpenClicky's, and every question goes to the Voice
+  Agent (see the Voice Agent section). No OpenClicky account. Since 10 Nov: double-tap ⌃⌥ to keep
+  listening until the next ⌃⌥ press; **⌃⌘** dictates (hold, or tap to start and tap to paste,
+  double-tap to latch); while a talk turn listens the island shows a **pencil** (draw on the
+  screen in red), **clear** (captures the drawing with the screen, attaches it, wipes it; the same
+  capture happens 3 s after the last stroke and when the turn is sent) and a **region** button
+  (drag a rectangle); the captures go with the next question. Dictation is cleaned up by the
+  FreeFlow prompt on the local backend.
+- **Settings → Agentic OS:** the Voice Agent's voice (from `/voices`, Play Sample, Use Petra) and
+  the ElevenLabs key; the choice is `voiceAgentVoice` in `~/.openclicky/shell.json`.
+- **One voice, and only what is used (10 Nov):** on the local backend every spoken line, including
+  the old recorded notices and tour lines, comes from the Voice Agent's voice through `/tts`; a
+  late or failed piece is skipped, never read by the Mac voice. The settings keep only what
+  applies here (the Agentic OS page, dictation, keys and styles, the pointer, the island, launch
+  at login); accounts, the allowance, other providers' keys and engines, agent mode and update
+  checks are gone, and the app makes no account or billing calls. A restricted ElevenLabs key
+  (no Voices read permission) is explained under the voice picker.
+- **It speaks first:** the program keeps `GET /events` open for the Voice Agent's announcements,
+  tours (point, clear) and stop; ⌃⌥ during an announcement cuts in.
+- **Agent mode is Petra.** She sends **managers** (files, prompts, research) or a **Clicky
+  agent** (`start_clicky_agent`): a manager that works on the screen with the computer tools
+  (`bridge/computer.mjs`). Managers can send a Clicky agent too. One Clicky agent works at a time,
+  shown in cyan on the OS.
+- **The Clicky agent's hands are the program** (`AgenticOSHands.swift`, 127.0.0.1:8795): before
+  every click or drag the companion's pointer flies to the spot with the agent's label, then the
+  real mouse acts; the island says which agent is working; **Esc stops it**.
+- **Background hands (10 Nov):** the screen agent starts with `use_app`, and that app's window
+  gets a cyan outline ("Screen agent · Figma") Luke can watch; inside it `read_window` lists the
+  controls with numbers, and `press_control`, `set_text`, `send_keys`, `type_quiet` and
+  `quiet_click` act through the Accessibility API and events posted to that app, with a pulse
+  mark at each press, so Luke keeps his mouse and keyboard. The mouse tools remain for drags,
+  canvases and apps with no control list. In the app: `AgenticOSHands` commands target,
+  window_tree, press, set_value, focus, keys_to_app, type_to_app, click_to_app, mark;
+  `AgenticOSOutline.swift`. On the bridge: `computer.mjs` (copy `computer.before-background.mjs`).
+- **Petra's voice through the program:** each sentence reaches the app only once her Voxtral
+  audio is made, so her voice is used every time; it is made at about the speed it is spoken,
+  so a long answer pauses between sentences.
+- Copies from before: `bridge/managers.before-clicky.mjs`, `clicky/server.before-voicegate.mjs`.
+  `~/Coding/jarvis/computer/` (Petra Computer) is no longer used.
+
+## The Voice Agent: what ⌃⌥ talks to (10 Nov 2026)
+
+The Agentic OS Voice Agent sits in front of Petra's chats (`~/Coding/jarvis/clicky/voice-agent.mjs`,
+wired into `clicky/server.mjs`). Petra is the chat agent; the Voice Agent is the one that hears
+Luke and speaks.
+
+- **Routing.** Each thing Luke says is matched (Haiku, with his screenshot) against the chats open
+  on the OS and sent into the right one, with his screen attached, and he hears at once where it
+  went: "Sent to the Secrets page chat." (2.4 s end to end in testing). Work that fits no chat
+  starts a new chat in Petra's chat window. "Give the logo brief from the Titans chat to the Elite
+  chat" copies the piece from one chat into the other. When two chats could be meant it asks one
+  short question and listens for the answer. Anything said to the Voice Agent itself (what is on
+  screen, a quick Mac action, a tour command) goes to Petra's own Voice Agent tab as before.
+- **It speaks first.** When a chat the Voice Agent sent work to finishes, it says so and offers a
+  tour: "The Secrets page chat just came back. Petra restyled the offer box. Want me to show you
+  around?" The program listens on `GET /events` (say, point, clear, stop) and reports back on
+  `POST /events/said`. Any session can make it speak: `POST /voice/say {text, listen}`.
+- **It speaks only when the work is done (10 Nov).** The announcement follows the chat's state on
+  the bridge, which stays "working" while Petra replies and while her managers run: "The Secrets
+  chat is finished", "Petra has a question for you in the Secrets chat", or "The Secrets chat hit
+  a problem".
+- **Tours.** On a yes, the Voice Agent reads Petra's last reports to work out what the result is
+  and where it lives, opens it the vault's way (Obsidian; Chrome for Google links), and checks on
+  a screenshot that it is on screen, trying each display; if not, it asks Luke to open it and say
+  ready. Then Sonnet plans four to seven points with a short line and a "why" each, and the
+  pointer flies to each as it is spoken. Every step starts with a fresh look: the app returns a
+  48x30 grey thumbnail with each screenshot, and if the view moved the remaining points are
+  re-found on the new view, or it says "You scrolled away" and waits up to a minute for the view
+  to come back. "Faster", "slower", "skip", "move on" and "stop" are caught in code, no model
+  call; a question pauses the tour, is answered from the screen, and the tour carries on.
+- **Fast confirmations.** Petra's voice takes a few seconds a sentence, so the confirmation for
+  each open chat and the fixed phrases are made ahead and kept warm (`warmPhrases`).
+- **Voices.** `GET /voices` lists Petra's Voxtral voice and, with an ElevenLabs key in
+  `~/.openclicky/shell.json`, Luke's ElevenLabs voices; `voiceAgentVoice` in shell.json picks the
+  one every `/tts` uses (ElevenLabs flash model, mp3).
+- **Dictation clean-up.** `POST /v1/freeflow` runs FreeFlow's clean-up prompt
+  ([zachlatta/freeflow](https://github.com/zachlatta/freeflow), MIT; `clicky/freeflow-prompt.txt`)
+  on Haiku with the front app, window and selected text as context, plus a vocabulary list
+  (`clicky/vocabulary.txt` if present, else the built-in GTD names). It keeps self-corrections
+  ("Thursday, no actually Wednesday" becomes Wednesday) and never answers a dictated instruction.
+- **Screen agent.** The mouse agent is the screen agent: `start_screen_agent` for Petra and
+  managers (was start_clicky_agent; loads on the next bridge restart).
+- Copies from before: `clicky/server.before-voice-agent.mjs`, `bridge/managers.before-screen-agent.mjs`.
+- **Microphone and headsets (13 Nov).** Automatic microphone records from the MacBook Pro
+  Microphone when the Mac's default input is a Bluetooth headset, so the headset never drops into
+  call mode while the Voice Agent listens. Choose the headset in Settings to talk through it. A
+  microphone that changes while opening no longer freezes the app: the take fails with a sentence
+  (fix for the island click crash, see [[2026-10-15 - RoboNuggets Setup On Vault|the chat]]).
+
+## Open or refresh: `obsidian://gtd-open` (12 Nov 2026)
+
+The plugin (1.2.2) answers `obsidian://gtd-open?url=<page>` and `?file=<vault path>`: if a web
+viewer tab already shows that page (same address, any `?v=` or hash) it is reloaded in place and
+brought forward; if a tab already shows that note, image or PDF it is re-opened on the same tab;
+only otherwise does a tab open. CLAUDE.md's Opening links rule uses it, so a page under edit is
+refreshed after every merge instead of piling up tabs. Copy: `main.before-gtd-open.js`.
+
+## On GitHub, and on Windows (12 Nov 2026)
+
+Public, under Luke's account: [agentic-os](https://github.com/LukeolafP/agentic-os) (the program,
+our fork of OpenClicky with its history) and [agentic-os-setup](https://github.com/LukeolafP/agentic-os-setup)
+(the Mac and Windows installers, the Mac and Windows packages attached to its Releases). The
+Windows package is assembled by `~/Coding/jarvis/tools/make-windows-package.sh` from the live
+vault, the bridge and the fork; the Windows program is built on a PC by a Claude Code session
+following `windows/AGENTIC-OS-WINDOWS-BRIEF.md` in the fork. The bridge and the Voice Agent
+server run on both systems (`gtd.mjs` WIN, openWith; Voxtral and Parakeet only on Apple
+Silicon, Kokoro and faster-whisper elsewhere; ElevenLabs for the Windows voice). Before anything
+is pushed it is scanned for keys and personal details; the live OS snapshots are never packaged.
 
 ## Claude Code in the OS
 
@@ -236,6 +445,42 @@ Since 20 October 2026 every agent definition is a note in `Agents/`, listed in
 folder, which is how Claude Code, Petra's queue, `tools/agents.mjs` and the constellation
 find them. The index note has no `name` in its frontmatter, so nothing treats it as an
 agent. Checked: `claude -p --agent hook-analyst` loads through the link.
+
+## Agent teams: a lead stands for its team
+
+Since 29 October 2026 a brand's agents sit under one lead (Luke: "all Blueprint agents
+under BP Creative Director, and when I hover it, it shows the rest of that team"). Two teams
+so far, both in [[00 Agents Index]]: [[bp-creative-director|BP · Creative Director]] over the
+five `bp-` agents, and [[ac-creative-director|AC · Creative Director]] over the five `ac-` agents.
+
+- **The fields**, in each agent's frontmatter: `team: blueprint | alpha-carrier`,
+  `team_role: lead | member`, and on a member `lead: <director id>`. `role:` stays the
+  Team-tab line. An agent with no team shows as before.
+- **Where it shows.** The constellation ring has only the lead, in the team's brand colour
+  (Blueprint Bright Blue `#1A8CF6`, Alpha Carrier red `#E10600`) with a second hairline ring
+  and a small count of members working; a member's copies fly out from the lead. In Petra's
+  chat the MANAGERS & AGENTS strip folds a team's copies into one lead chip with the same
+  count. In the Rubric console the sidebar, the Agents tab and the Team tab each show the lead
+  alone, with the team's activity.
+- **The popover.** Hover the lead, tap it, or Tab to it (Enter or ↓ moves into the list,
+  Esc goes back) and it lists the lead and its members with each one's one-line description
+  and live status: idle, queued or working. Clicking a member opens it as clicking it on the
+  ring does (its live chat, or the Second Brain on it); **CALL** types "Queue <agent> (<id>): "
+  into Petra's chat for Luke to finish and send. CALL in the console does the same through
+  the OS.
+- **How.** `rubric-agentic-os/agent-teams.js` and `agent-teams.css` hold the team logic and
+  the popover; they read the fields from `/vault/Agents/<id>.md`, because the bridge's
+  activity snapshot only carries id, name, colour and department (it will use the fields
+  from the snapshot if the bridge ever sends them). `constellation.js` and `chat.js` use it.
+  `tools/agents.mjs register` now copies the three fields into the console's configs, and
+  the console's `scaffold/index.html` groups by them. No bridge change, so no restart: a
+  reload of the OS or the console is enough.
+- **Checked** 29 Oct 2026 with playwright against :50000 and :5050, the bridge socket
+  stubbed so Luke's chat was untouched, working members faked: hover, the pointer crossing
+  into the popover, keyboard, touch, CALL from the OS and from the console, 0 console errors.
+  Screens: `rubric-agentic-os/screens/agent-teams/`. Copies from before the change are the
+  `*.bak-2026-10-29` files beside `constellation.js`, `chat.js`, `dashboard.html`,
+  `tools/agents.mjs`, `scaffold/index.html` and the three console `config.json` files.
 
 ## Inside Obsidian: the GTD Rubric plugin
 
@@ -328,6 +573,8 @@ replaced the decorative orb:
   twice, it shows twice. An agent called by another agent orbits that agent. Small dots
   around a working copy are the files it has touched (bright: changed, pale: read).
   Finished copies show a tick, go home and fade.
+- An agent team shows as its lead only; hover, tap or Tab to it for the members (see
+  Agent teams above).
 - Click an agent, on the ring or in flight, and the Second Brain opens full screen on a
   live node for that agent, linked to every file its copies have read or changed, with
   the folders opened to show them. The links grow while it works.
@@ -446,6 +693,10 @@ background with a 2 second timeout and does nothing when the console is off.
 - **Email** widget is not wired: it needs a `gws` CLI, which is not installed.
 - **Skills deck** is empty on purpose. Each card runs a headless Claude session with
   permission prompts bypassed.
+- **Agentic OS program** is built and running (7 Nov) and the bridge has `start_clicky_agent`; it needs
+  Accessibility and Screen Recording switched on before a Clicky agent can work.
+- **OpenClicky** is tested through its server, not yet by Luke speaking into the app. Its server
+  is not yet a launchd agent, so it stops at logout until the plist is installed.
 
 ## Related
 - [[Petra Voices]] — the three Voxtral voices to compare, and how to change hers

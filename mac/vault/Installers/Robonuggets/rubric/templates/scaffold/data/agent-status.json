@@ -1,8 +1,8 @@
 {
   "gtd-vault": {
     "status": "active",
-    "task": "Write me a folder with claude md and setup including all code required…",
-    "updatedAt": 1792713298215
+    "task": "get the github repo's all up to date",
+    "updatedAt": 1794947350504
   },
   "case-study-logos": {
     "status": "idle",
@@ -38,5 +38,60 @@
     "status": "idle",
     "task": "done: Read Luke's Organic Growth Manager Scorecard and Responsibilities notes and list every target with what the vault ",
     "updatedAt": 1792092376823
+  },
+  "bp-brand-checker": {
+    "status": "idle",
+    "task": "done: Brand check the new Blueprint invoice icon (Brand/Blueprint/icons/invoice.svg) at 48/24/16 px on white, blue a",
+    "updatedAt": 1793292226834
+  },
+  "ac-brand-checker": {
+    "status": "idle",
+    "task": "done: Brand check the current Alpha Carrier upsell, Content/Website/Blueprint/Funnel/Alpha Carrier/alpha-carrier-classic",
+    "updatedAt": 1793289432728
+  },
+  "bp-creative-director": {
+    "status": "idle",
+    "task": "done: Test run of the Blueprint team, end to end: have bp-graphic-designer add one new icon, invoice (a sheet with a dol",
+    "updatedAt": 1793290213980
+  },
+  "ac-creative-director": {
+    "status": "idle",
+    "task": "failed: Luke (30 Oct 2026) wants 5 variations of the Alpha Carrier upsell page (the classic red and black one, Content/W",
+    "updatedAt": 1793388582207
+  },
+  "bp-mockup-designer": {
+    "status": "idle",
+    "task": "done: Make a 1200x630 Open Graph share image for the Blueprint sales page: the box-4-b cutout on blueprint blue with the",
+    "updatedAt": 1793290506461
+  },
+  "ac-mockup-designer": {
+    "status": "idle",
+    "task": "done: Make a 1200x630 Open Graph share image for the Alpha Carrier upsell: the classic box cutout on white with the blac",
+    "updatedAt": 1793290819556
+  },
+  "bp-page-builder": {
+    "status": "idle",
+    "task": "done: Draft a Blueprint 404 page (heading, one line, a native Buy now button slot and a link back to the sales page) in ",
+    "updatedAt": 1793291038746
+  },
+  "ac-page-builder": {
+    "status": "idle",
+    "task": "done: Luke (30 Oct 2026) picked v3 \"Split\" of the video-first Alpha Carrier upsell variations: Content/Website/Blueprint",
+    "updatedAt": 1793392823600
+  },
+  "bp-motion-designer": {
+    "status": "idle",
+    "task": "done: Record the Blueprint logo roll-out from the sales page as a 1080x1080 MP4 under 6 s into Brand/Blueprint/motio",
+    "updatedAt": 1793291284256
+  },
+  "ac-motion-designer": {
+    "status": "idle",
+    "task": "done: Record the classic Alpha upsell's hero conveyor scene as a seamless loop MP4, 1920x1080, under 8 s, into Brand/Alp",
+    "updatedAt": 1793291773734
+  },
+  "ring-organizer": {
+    "status": "idle",
+    "task": "session ended",
+    "updatedAt": 1794938858710
   }
 }

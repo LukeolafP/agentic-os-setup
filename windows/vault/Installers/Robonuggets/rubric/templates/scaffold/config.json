@@ -172,6 +172,18 @@
       "name": "Ring Organizer",
       "color": "#00c853",
       "icon": "Rune"
+    },
+    {
+      "id": "chrome-operator",
+      "name": "Chrome Operator",
+      "color": "#00c853",
+      "icon": "Drift"
+    },
+    {
+      "id": "image-viewer",
+      "name": "Image Viewer",
+      "color": "#00c853",
+      "icon": "Orb"
     }
   ]
 }

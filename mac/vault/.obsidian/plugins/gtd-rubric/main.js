@@ -153,6 +153,13 @@ module.exports = class GtdRubricPlugin extends Plugin {
 
     // obsidian://rubric[?tab=brain|console|term] - opens it from anywhere outside Obsidian
     this.registerObsidianProtocolHandler("rubric", (p) => this.open(TABS[p.tab] ? p.tab : "os"));
+    // GTD (12 Nov 2026): obsidian://gtd-open?url=<page> or ?file=<vault path>: the way Petra, her
+    // managers and the Voice Agent show Luke something. If that page, note, image or PDF is already
+    // open, it is refreshed in its own tab and brought forward; only otherwise is a tab opened.
+    this.registerObsidianProtocolHandler("gtd-open", (p) => {
+      if (p.url) void this.openOrRefresh(p.url);
+      else if (p.file) void this.openOrRefreshFile(p.file);
+    });
 
     // links clicked inside the OS open as Obsidian tabs instead of the external browser
     // Any Rubric OS tab may send it (not only the first), and every link message is logged,
@@ -222,6 +229,33 @@ module.exports = class GtdRubricPlugin extends Plugin {
       try { require("electron").shell.openExternal(u.href); return this.logOpen(u.href, "browser after error: " + (err && err.message), true); }
       catch (e2) { new Notice("Could not open " + u.href); return this.logOpen(u.href, "failed: " + (err && err.message) + " / " + (e2 && e2.message), false); }
     }
+  }
+  /* a page: the web viewer tab already showing it is reloaded in place (its ?v= and #hash may
+     differ: a merge bumps the version), else a new tab */
+  async openOrRefresh(url) {
+    let u;
+    try { u = new URL(url); } catch { return this.logOpen(url, "bad url", false); }
+    const same = (a) => { try { const x = new URL(a); return x.origin === u.origin && x.pathname === u.pathname; } catch { return false; } };
+    for (const leaf of this.app.workspace.getLeavesOfType("webviewer")) {
+      const st = leaf.getViewState();
+      if (!same(st && st.state && st.state.url)) continue;
+      await leaf.setViewState({ type: "webviewer", active: true, state: { ...(st.state || {}), url: u.href, navigate: true } });
+      this.app.workspace.revealLeaf(leaf);
+      return this.logOpen(u.href, "web viewer, refreshed in place", true);
+    }
+    return this.openLink(u.href);
+  }
+  /* a note, image, video or PDF: the tab already showing it is re-opened on the same leaf, which
+     re-renders the file, and brought forward; else a new tab */
+  async openOrRefreshFile(vaultPath) {
+    const file = this.app.vault.getAbstractFileByPath(vaultPath);
+    if (!file) { new Notice("Not in the vault: " + vaultPath); return this.logOpen(vaultPath, "no such file", false); }
+    let found = null;
+    this.app.workspace.iterateAllLeaves((leaf) => { if (!found && leaf.view && leaf.view.file && leaf.view.file.path === file.path) found = leaf; });
+    const leaf = found || this.app.workspace.getLeaf("tab");
+    await leaf.openFile(file, { active: true });
+    this.app.workspace.revealLeaf(leaf);
+    return this.logOpen(vaultPath, found ? "file, refreshed in place" : "file, new tab", true);
   }
   logOpen(url, how, ok) {
     try {

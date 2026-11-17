@@ -88,7 +88,7 @@ R="$VAULT/Installers/Robonuggets"
 mkdir -p "$R"; rsync -a --backup --backup-dir="$BACKUP/Installers/Robonuggets" --exclude "00 Robonuggets Index.md" "$HERE/vault/Installers/Robonuggets/" "$R/"
 [ -e "$R/00 Robonuggets Index.md" ] || cp "$HERE/vault/Installers/Robonuggets/00 Robonuggets Index.md" "$R/"
 ok "Installers/Robonuggets (Rubric console, Second Brain, Agentic OS)"
-put vault/.claude/hooks "$VAULT/.claude/hooks";               chmod +x "$VAULT/.claude/hooks/"*.sh; ok ".claude/hooks"
+put vault/.claude/hooks "$VAULT/.claude/hooks";               chmod +x "$VAULT/.claude/hooks/"*.sh "$VAULT/.claude/hooks/"*.js 2>/dev/null; ok ".claude/hooks"
 put vault/.claude/skills "$VAULT/.claude/skills";             ok ".claude/skills (agent-creator)"
 put vault/.obsidian/plugins/gtd-rubric "$VAULT/.obsidian/plugins/gtd-rubric"; ok ".obsidian/plugins/gtd-rubric"
 mkdir -p "$VAULT/Agents"
@@ -104,10 +104,12 @@ if os.path.exists(dst):
     try: cur = json.load(open(dst))
     except Exception: cur = {}
 cur['hooks'] = new['hooks']
+# the 200k auto-compact window (17 Nov 2026): set unless this vault already chose one
+if new.get('autoCompactWindow') and not cur.get('autoCompactWindow'): cur['autoCompactWindow'] = new['autoCompactWindow']
 os.makedirs(os.path.dirname(dst), exist_ok=True)
 json.dump(cur, open(dst, 'w'), indent=2)
 PY
-ok ".claude/settings.json (hooks set, other settings kept)"
+ok ".claude/settings.json (hooks and auto-compact window set, other settings kept)"
 # notes Petra relies on, only if the vault does not have them (a synced vault will)
 for f in "CLAUDE.md" "Memory/Automations/Chat Logging.md" "Memory/Automations/Agent Report Filing.md"; do
   if [ ! -e "$VAULT/$f" ]; then mkdir -p "$(dirname "$VAULT/$f")"; cp "$HERE/vault-seed/$f" "$VAULT/$f"; detoken "$VAULT/$f"; ok "added $f"; fi

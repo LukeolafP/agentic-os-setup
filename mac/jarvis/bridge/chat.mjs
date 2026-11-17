@@ -80,11 +80,31 @@ show in mcp__petra__managers, and mcp__petra__release_claims frees a stuck one.
 Background agents from Agents/ (mcp__gtd__queue_agent) are still there for the specialist
 jobs they were made for, and the Agent tool for quick subagents in this turn.
 
+## Pictures stay out of this chat
+
+Every image in this chat is re-read on each later turn, so none come in:
+- Photos and screen captures Luke sends arrive as file paths. To see them, call the Agent
+  tool with subagent_type "image-viewer", the paths and your question, and use its text
+  answer. For a voice turn, say your short first line, then call it. Never Read an image
+  file yourself; the vault blocks it here.
+- When a manager or agent needs the pictures, put the paths in its brief.
+- Chrome work goes to the "chrome-operator" subagent (or to a manager, which uses it), in
+  small batches. Claude in Chrome tools are blocked in this chat.
+
 ## Voice
 
 A message that starts with "(Voice)" was spoken by Luke and your reply is read aloud:
 start it with one or two plain spoken sentences, no markdown in them; anything longer
 (lists, tables, paths) can follow below, where he reads it.
+
+## When the work is finished, say what there is to see
+
+The Voice Agent (what Luke talks to through ⌃⌥) announces this chat when its work is done
+and offers to walk him through the result on screen. So when a piece of work is finished
+and there is something to look at, end your final reply with one line it reads:
+[RESULT: path=<the vault path of the page, note or image, or the URL> | what=<what it is, in a few words, as it looks on screen> | view=<page, note, image or chrome>]
+A plain answer, a plan or a confirmation gets no RESULT line; then it only tells him you
+are done.
 `
 
 // starts in auto mode, as Luke's terminal does; each tab's mode chip cycles it like shift+tab
@@ -105,17 +125,34 @@ function emit(t, ev, keep = true) {
   if (keep && ev.k === 'user') pushTabs()           // a first message names the tab
 }
 
+/* ---------- project chats (GTD 17 Nov 2026, chat 2026-11-16 - Token Burn Audit) ----------
+   Every tab is a project with a fixed name: typed in the OS when the tab is made, or said to
+   the Voice Agent when it asks. The name is what the tab shows and what the Voice Agent routes
+   by, and it never changes on its own; only a rename by Luke changes it (chat-rename). The
+   Haiku summary still runs, but only fills `about` (what the project is doing now), shown
+   under the name and given to the router. A tab made without a name (an old path) gets one
+   from its first summary, once, and keeps it. */
+const cleanName = (v) => String(v ?? '').replace(/[\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80)
 function newTab(init = {}) {
   const id = 't' + Date.now().toString(36) + randomBytes(2).toString('hex')
-  const t = { id, state: null, log: init.log || [], info: init.info || {}, mode: init.mode || 'auto', open: true, created: init.created || Date.now() }
+  const t = { id, state: null, log: init.log || [], info: init.info || {}, mode: init.mode || 'auto', open: true, created: init.created || Date.now(), project: cleanName(init.project) || null, about: init.about || null }
   tabs.set(id, t); order.push(id)
   return t
 }
 const titleOf = (t) => {
+  if (t.project) return t.project
   if (t.summary) return t.summary
   const u = t.log.find((e) => e.k === 'user' && e.text)
-  return u ? u.text.replace(/\s+/g, ' ').slice(0, 160) : 'New chat'
+  return u ? u.text.replace(/\s+/g, ' ').slice(0, 160) : 'New project'
 }
+/* added to Petra's system prompt, so she knows which project this chat is */
+const projectRules = (t) => t.project ? `
+
+## This chat is the project "${t.project}"
+
+Everything for this project happens in this chat, whatever page, piece, fix or follow-up it
+is about; that is why it has one fixed name. Name its chat note (Chat Logging) after the
+project: topic "${t.project}". Managers you start here report back here.` : ''
 
 /* ---------- tab names: what the chat is doing now, not its first message (30 Oct 2026) ----------
    A one-shot Haiku call reads the last stretch of the chat and names it in a few words. It runs
@@ -123,6 +160,8 @@ const titleOf = (t) => {
    No tools, no settings or hooks, no transcript saved, so it never shows in chat history. */
 const SUM_MODEL = process.env.GTD_SUMMARY_MODEL || 'claude-haiku-4-5-20251001'
 const SUM_DIR = join(DIR, 'summaries')
+const ABOUT_RULES = `You describe what a project chat is doing right now, for a list of chats. Reply with only the description: 3 to 9 words, sentence case, no full stop, no quotes, no emoji. Weigh the most recent messages most. Use the page or file names the chat uses. Start with a verb in -ing form when work is under way ("Building the order page price card"), or name the topic when it is a question or a finished piece.`
+const PROJECT_RULES = `You name a project chat in a chat app. Reply with only the name: 2 to 5 words in Title Case naming the product, campaign or job the chat is about, not the task under way, like "Black Friday Secrets Pages" or "Alpha Carrier Upsell". No quotes, no full stop, no emoji.`
 const SUM_RULES = `You name a tab in a chat app. Reply with only the name: a summary of what is being worked on in this chat right now, 3 to 9 words, sentence case, no full stop, no quotes, no emoji.
 Weigh the most recent messages most: the name says what the chat is doing now, not how it started. Use the project, page or file names the chat uses. Start with a verb in -ing form when work is under way ("Building the Alpha Carrier products page"), or name the topic when it is a question or a finished piece ("Petra tab titles and hover pop-out").`
 const summing = new Set()
@@ -147,15 +186,18 @@ async function summarize(t) {
     const env = cleanEnv(); delete env.CLAUDE_CODE_ENABLE_CFC; delete env.CLAUDE_CODE_ARTIFACT
     env.ENABLE_CLAUDEAI_MCP_SERVERS = 'false'          // no connectors to load: about 1.7 s a name
     const q = query({
-      prompt: `${t.summary ? `The tab is named "${t.summary}" now; keep that name if it still fits.\n\n` : ''}The chat, oldest first:\n${digest(t)}`,
-      options: { cwd: SUM_DIR, pathToClaudeCodeExecutable: gtd.CLAUDE_BIN, model: SUM_MODEL, systemPrompt: SUM_RULES,
+      prompt: t.project ? `The project is "${t.project}". The chat, oldest first:\n${digest(t)}` : `The chat, oldest first:\n${digest(t)}`,
+      options: { cwd: SUM_DIR, pathToClaudeCodeExecutable: gtd.CLAUDE_BIN, model: SUM_MODEL, systemPrompt: t.project ? ABOUT_RULES : PROJECT_RULES,
         settingSources: [], tools: [], maxTurns: 1, persistSession: false,
         mcpServers: {}, strictMcpConfig: true, thinking: { type: 'disabled' }, env },   // thinking made it 20 to 45 s
     })
     let out = ''
     for await (const m of q) if (m.type === 'result' && m.subtype === 'success') out = m.result || ''
     out = out.split('\n')[0].replace(/^[\s"'“”*#-]+|[\s"'“”*.]+$/g, '').replace(/\s+/g, ' ').slice(0, 90)
-    if (out && tabs.has(t.id) && out !== t.summary) { t.summary = out; scheduleSave(); pushTabs() }
+    if (out && tabs.has(t.id)) {
+      if (t.project) { if (out !== t.about) { t.about = out; scheduleSave(); pushTabs() } }
+      else { t.project = cleanName(out); scheduleSave(); pushTabs() }        // named once, then fixed
+    }
   } catch (err) { console.log('[chat] tab summary failed:', String(err?.message || err).slice(0, 200)) }
   finally {
     summing.delete(t.id)
@@ -200,7 +242,7 @@ export function chatSeen(id) {
 /* a manager's question goes yellow after 30 s unanswered: look again then */
 setInterval(() => { if (managers.openQuestions().some((q) => Date.now() - q.at > 30_000 && Date.now() - q.at < 45_000)) pushTabs() }, 15_000)
 export function chatTabs() {
-  return order.map((id) => tabs.get(id)).filter(Boolean).map((t) => ({ id: t.id, title: titleOf(t), busy: !!t.state?.busy, session: t.info.session || null, state: tabState(t) }))
+  return order.map((id) => tabs.get(id)).filter(Boolean).map((t) => ({ id: t.id, title: titleOf(t), project: t.project || null, about: t.about || null, busy: !!t.state?.busy, session: t.info.session || null, state: tabState(t) }))
 }
 function pushTabs(focus) { broadcast({ k: 'tabs', tabs: chatTabs(), focus: focus || null, at: Date.now() }) }
 function syncPetra() { gtd.setPetra([...tabs.values()].some((t) => t.state?.busy) ? 'thinking' : 'idle') }
@@ -212,11 +254,11 @@ function scheduleSave() {
     try {
       mkdirSync(DIR, { recursive: true })
       writeFileSync(TABS_FILE, JSON.stringify({ savedAt: Date.now(), commands, order,
-        tabs: Object.fromEntries(open.map((t) => [t.id, { session: t.info.session || null, mode: t.mode, created: t.created, summary: t.summary || null, doneAt: t.doneAt || 0, seenAt: t.seenAt || 0, log: t.log }])) }))
+        tabs: Object.fromEntries(open.map((t) => [t.id, { session: t.info.session || null, mode: t.mode, created: t.created, summary: t.summary || null, project: t.project || null, about: t.about || null, doneAt: t.doneAt || 0, seenAt: t.seenAt || 0, log: t.log }])) }))
     } catch {}
     for (const t of tabs.values()) {
       if (!t.info.session || !t.log.some((e) => e.k === 'user')) continue
-      try { mkdirSync(HIST_DIR, { recursive: true }); writeFileSync(join(HIST_DIR, t.info.session + '.json'), JSON.stringify({ id: t.info.session, savedAt: Date.now(), log: t.log })) } catch {}
+      try { mkdirSync(HIST_DIR, { recursive: true }); writeFileSync(join(HIST_DIR, t.info.session + '.json'), JSON.stringify({ id: t.info.session, savedAt: Date.now(), project: t.project || null, log: t.log })) } catch {}
     }
   }, 400)
 }
@@ -228,7 +270,7 @@ function restore() {
     commands = d.commands || []
     for (const id of d.order || []) {
       const x = d.tabs?.[id]; if (!x) continue
-      const t = { id, state: null, log: staleOut(x.log), info: x.session ? { session: x.session, resumed: true } : {}, mode: x.mode || 'auto', open: true, created: x.created || Date.now(), summary: x.summary || null, doneAt: x.doneAt || 0, seenAt: x.seenAt || 0 }
+      const t = { id, state: null, log: staleOut(x.log), info: x.session ? { session: x.session, resumed: true } : {}, mode: x.mode || 'auto', open: true, created: x.created || Date.now(), summary: x.summary || null, project: x.project || null, about: x.project ? x.about || null : x.summary || null, doneAt: x.doneAt || 0, seenAt: x.seenAt || 0 }
       tabs.set(id, t); order.push(id)
     }
   } catch {
@@ -242,7 +284,7 @@ function restore() {
   if (!order.length) newTab()
   scheduleSave()                         // the tab list exists on disk from the start, so tab ids stay put
   // tabs from before summaries get theirs, one at a time
-  const unnamed = order.map((id) => tabs.get(id)).filter((t) => t && !t.summary && t.log.some((e) => e.k === 'user'))
+  const unnamed = order.map((id) => tabs.get(id)).filter((t) => t && !t.project && t.log.some((e) => e.k === 'user'))
   unnamed.forEach((t, i) => setTimeout(() => void summarize(t), 4000 + i * 2500))
 }
 
@@ -323,6 +365,8 @@ function cleanEnv() {
      ("sdk_default_off") unless this is set, so Petra and her managers can publish
      claude.ai artifacts like the plain CLI does */
   env.CLAUDE_CODE_ARTIFACT = '1'
+  /* GTD (26 Oct 2026): load the Claude in Chrome browser tools in SDK sessions, like `claude --chrome` */
+  env.CLAUDE_CODE_ENABLE_CFC = '1'
   return env
 }
 
@@ -347,12 +391,12 @@ function start(t) {
       // all of Claude Code's own settings, the same as the terminal: model, permissions,
       // memory, MCP servers (user and project), the vault's CLAUDE.md, hooks, skills, agents
       settingSources: ['user', 'project', 'local'],
-      systemPrompt: { type: 'preset', preset: 'claude_code', append: CHAT_RULES },
+      systemPrompt: { type: 'preset', preset: 'claude_code', append: CHAT_RULES + projectRules(t) },
       mcpServers: { gtd: gtd.gtdServer(), petra: managers.petraServer(t.id) },
       includePartialMessages: true,
       canUseTool: (toolName, input, opts) => askLuke(t, null, toolName, input, opts),
       permissionMode: t.mode,
-      env: cleanEnv(),
+      env: { ...cleanEnv(), GTD_PETRA: '1' },      // .claude/hooks/media-guard.js keeps image files out of Petra's chat
       ...(t.info.session ? { resume: t.info.session } : {}),
     },
   })
@@ -383,6 +427,7 @@ async function pump(t, s) {
       if (s !== t.state) break
       switch (msg.type) {
         case 'system':
+          gtd.trackTask(msg, ROOT)      // Petra's background helpers stay on the OS until they settle
           if (msg.subtype === 'init') {
             t.info = { model: msg.model, cwd: msg.cwd, session: msg.session_id, permissionMode: msg.permissionMode || t.mode,
               mcp: (msg.mcp_servers || []).map((x) => ({ name: x.name, status: x.status })), tools: (msg.tools || []).length }
@@ -461,11 +506,13 @@ export function chatSend(id, text, display, voice, images) {
   emit(t, { k: 'user', text: String(display ?? text), voice: !!voice, thumbs: imgs.map((i) => i.thumb).filter(Boolean), files: imgs.map((i) => i.file) })
   t.state.busy = true; syncPetra(); gtd.touchSession()
   emit(t, { k: 'status', busy: true }, false); pushTabs(); void summarize(t)
+  /* GTD 17 Nov 2026 (chat 2026-11-16 - Token Burn Audit): photos used to go to Petra as image
+     blocks and stayed in her chat, re-read on every later turn. Now only their paths go in;
+     she sends the image-viewer subagent to look, or passes the paths to a manager. */
   let content = text
   if (imgs.length) {
-    const where = `(${imgs.length} image${imgs.length > 1 ? 's' : ''} attached above, also saved as ${imgs.map((i) => i.file).join(', ')}. Hand those paths to any manager or subagent that needs to see them.)`
-    content = [...imgs.map((i) => ({ type: 'image', source: { type: 'base64', media_type: i.type, data: i.data } })),
-      { type: 'text', text: (text || 'Here are some images.') + '\n\n' + where }]
+    const where = `(${imgs.length} image${imgs.length > 1 ? 's' : ''} from Luke, saved as, in order: ${imgs.map((i, n) => `${n + 1}. ${i.file}`).join('; ')}. They are not in this chat. To see them, call the Agent tool with subagent_type "image-viewer", these paths and your question; to have a manager or agent use them, put the paths in its brief.)`
+    content = (text || 'Here are some images.') + '\n\n' + where
   }
   if (t.state.deliver) { const d = t.state.deliver; t.state.deliver = null; d(content) } else t.state.inbox.push(content)
 }
@@ -495,18 +542,28 @@ function endSession(t, why) {
 export function chatClear(id) {
   const t = tabs.get(id); if (!t) return
   endSession(t, 'New chat.')
-  t.log = []; t.info = {}; t.summary = null
+  t.log = []; t.info = {}; t.summary = null; t.about = null      // the project name stays
   managers.clearFinished(t.id)
   scheduleSave(); syncPetra()
   emit(t, { k: 'reset' }, false); pushTabs()
 }
 export const chatNew = chatClear
 
-/** a new tab, with a fresh chat */
-export function chatNewTab() {
-  const t = newTab()
+/** a new project tab, with a fresh chat; name is the project's (from the OS or the Voice Agent) */
+export function chatNewTab(name) {
+  const t = newTab({ project: name })
   scheduleSave(); pushTabs(t.id)
   return t.id
+}
+
+/** Luke renames a project. Takes effect in Petra's instructions when the session next starts */
+export function chatRename(id, name) {
+  const t = tabs.get(id), n = cleanName(name)
+  if (!t || !n || n === t.project) return false
+  t.project = n
+  if (t.state && !t.state.busy) endSession(t, 'Renamed.')     // idle: the next message starts with the new name
+  scheduleSave(); pushTabs()
+  return true
 }
 
 /** close a tab: its session ends, its chat stays in history; the last tab is never left empty */
@@ -524,7 +581,9 @@ export function chatOpenSession(sessionId) {
   if (!/^[0-9a-f-]{36}$/.test(sessionId)) return null
   const already = order.map((id) => tabs.get(id)).find((t) => t?.info.session === sessionId)
   if (already) { pushTabs(already.id); return already.id }
-  const t = newTab({ log: chatSessionLog(sessionId).slice(), info: { session: sessionId, resumed: true } })
+  let project = null
+  try { project = JSON.parse(readFileSync(join(HIST_DIR, sessionId + '.json'), 'utf8')).project || null } catch {}
+  const t = newTab({ log: chatSessionLog(sessionId).slice(), info: { session: sessionId, resumed: true }, project })
   scheduleSave(); pushTabs(t.id)
   return t.id
 }
@@ -635,7 +694,7 @@ export function chatSessionLog(id) {
         if (isNoise(t)) continue
         if (/^\[Manager "([^"]+)"/.test(t)) { out.push({ k: 'note', text: t.slice(0, 600), at }); continue }
         const voice = /^\(Voice\) /.test(t)
-        out.push({ k: 'user', text: t.replace(/^\(Voice\) /, '').replace(/\n\n\(\d+ images? attached above[\s\S]*$/, ''), voice, at })
+        out.push({ k: 'user', text: t.replace(/^\(Voice\) /, '').replace(/\n\n\(\d+ images? (attached above|from Luke, saved as)[\s\S]*$/, ''), voice, at })
       } else if (d.type === 'assistant' && Array.isArray(c)) {
         for (const b of c) {
           if (b.type === 'text' && b.text?.trim()) out.push({ k: 'text', text: b.text, at })

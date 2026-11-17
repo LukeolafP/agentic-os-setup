@@ -383,6 +383,11 @@ Luke and speaks.
 - **Screen agent.** The mouse agent is the screen agent: `start_screen_agent` for Petra and
   managers (was start_clicky_agent; loads on the next bridge restart).
 - Copies from before: `clicky/server.before-voice-agent.mjs`, `bridge/managers.before-screen-agent.mjs`.
+- **Microphone and headsets (13 Nov).** Automatic microphone records from the MacBook Pro
+  Microphone when the Mac's default input is a Bluetooth headset, so the headset never drops into
+  call mode while the Voice Agent listens. Choose the headset in Settings to talk through it. A
+  microphone that changes while opening no longer freezes the app: the take fails with a sentence
+  (fix for the island click crash, see [[2026-10-15 - RoboNuggets Setup On Vault|the chat]]).
 
 ## Open or refresh: `obsidian://gtd-open` (12 Nov 2026)
 
@@ -391,6 +396,18 @@ viewer tab already shows that page (same address, any `?v=` or hash) it is reloa
 brought forward; if a tab already shows that note, image or PDF it is re-opened on the same tab;
 only otherwise does a tab open. CLAUDE.md's Opening links rule uses it, so a page under edit is
 refreshed after every merge instead of piling up tabs. Copy: `main.before-gtd-open.js`.
+
+## On GitHub, and on Windows (12 Nov 2026)
+
+Public, under Luke's account: [agentic-os](https://github.com/LukeolafP/agentic-os) (the program,
+our fork of OpenClicky with its history) and [agentic-os-setup](https://github.com/LukeolafP/agentic-os-setup)
+(the Mac and Windows installers, the Mac and Windows packages attached to its Releases). The
+Windows package is assembled by `~/Coding/jarvis/tools/make-windows-package.sh` from the live
+vault, the bridge and the fork; the Windows program is built on a PC by a Claude Code session
+following `windows/AGENTIC-OS-WINDOWS-BRIEF.md` in the fork. The bridge and the Voice Agent
+server run on both systems (`gtd.mjs` WIN, openWith; Voxtral and Parakeet only on Apple
+Silicon, Kokoro and faster-whisper elsewhere; ElevenLabs for the Windows voice). Before anything
+is pushed it is scanned for keys and personal details; the live OS snapshots are never packaged.
 
 ## Claude Code in the OS
 

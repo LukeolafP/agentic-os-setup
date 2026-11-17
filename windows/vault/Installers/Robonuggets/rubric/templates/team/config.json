@@ -360,6 +360,32 @@
       ],
       "icon": "Rune",
       "color": "#00c853"
+    },
+    {
+      "id": "chrome-operator",
+      "name": "Chrome Operator",
+      "role": "GTD · does browser work, reports in text · sonnet-5 medium",
+      "description": "Does one small batch of browser work in Chrome (Claude in Chrome tools) and reports back in text only, so its screenshots never enter the session that sent it. Every Chrome job in the vault goes through it, one page, form or setting per call. Send it work like \"in Driver Deploy, change the footer address on the Blueprint sales page and publish\", \"read the live price on this page\", or \"check the ManyChat flow called Learn and list its steps\". Called as a subagent through the Agent tool; not queued on its own.",
+      "skills": [
+        "Chrome",
+        "Driver Deploy",
+        "Text-only reports"
+      ],
+      "icon": "Drift",
+      "color": "#00c853"
+    },
+    {
+      "id": "image-viewer",
+      "name": "Image Viewer",
+      "role": "GTD · looks at images, answers in text · sonnet-5 low",
+      "description": "Looks at photos, screenshots or rendered images by file path and answers a question about them in text, so the images never enter the session that asked. Petra uses it for every photo or screen capture Luke sends; managers use it for any picture they need read. Send it work like \"what is on Luke's screen in these two images, and where is the Save button\", \"read the text in this photo\", or \"does this render show the logo spelled right\". Called as a subagent through the Agent tool; not queued on its own.",
+      "skills": [
+        "Screenshots",
+        "Photos",
+        "Text-only answers"
+      ],
+      "icon": "Orb",
+      "color": "#00c853"
     }
   ]
 }

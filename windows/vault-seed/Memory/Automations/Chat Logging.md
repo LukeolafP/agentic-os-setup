@@ -40,6 +40,8 @@ one tool call and it is what makes a sudden close survivable.
      - Good: `2026-09-15 - Chat Logging Automation`
      - Bad: `2026-09-15 - Chat`, `2026-09-15 - Various`
    - If the filename exists, append ` (2)`, ` (3)`. Two chats can share a day.
+   - In Petra's chats on the Agentic OS, every chat is a named project. The topic is that
+     project's name, exactly as given.
 2. Frontmatter **must** carry `session:` with the session id from the hook output. That
    line is how the hook finds this note again on the next prompt. Without it, the next
    prompt reports "none yet" and a second note gets created for the same chat.
@@ -96,12 +98,9 @@ chat, grouped by theme, and it is read instead of the chat notes whenever the qu
 - Newest chat at the bottom of its theme, so each theme reads chronologically.
 - A chat that genuinely spans two themes is listed under both, same sentence.
 - Set `updated:` in the index frontmatter to today whenever it is touched.
-- **This index is loaded at every session start**, so it is the one note whose size costs
-  something on every conversation. Keep it to one line per chat, no sub-bullets, no
-  detail that belongs in the chat note. Currently about 8 tokens per chat.
-- Once it passes roughly 60 chats, split it the way the scripts are split: a year folder
-  with its own index, and this note demoted to the router that lists the years. Say so
-  when it gets close rather than letting it grow quietly.
+- **Only the newest dozen lines of this index load at session start.** The rest is reached
+  with brain.js recall or grep. Keep it to one line per chat, no sub-bullets, no detail that
+  belongs in the chat note, so each line still reads well on its own in that list.
 
 ### Rules
 - Never invent content to fill a section. `—` is the correct answer for a section the
@@ -111,8 +110,9 @@ chat, grouped by theme, and it is read instead of the chat notes whenever the qu
 - Never copy secrets, tokens or credentials into the note. Name the thing, not its value.
 - Do not paste long outputs. Link the file or the source instead.
 - Sensitive detail stays out: no driver PII from screen recordings or CRM rows.
-- The index is the navigation layer. Because it is already loaded, a question about past
-  work is answered from it, not by searching `Memory/Chats/`. Open a chat note only when
+- The index is the navigation layer. A question about past work is answered from the
+  recent chats in the session load, then brain.js recall, then a grep of the index, not by
+  searching `Memory/Chats/`. Open a chat note only when
   its index line says it holds what is needed. For anything outside chats, the order is
   in the "Finding things" section of CLAUDE.md: grep first, then [[00 Master Index]].
 - The raw log in `.raw/` is a safety net, not a deliverable. Do not tidy it, and do not

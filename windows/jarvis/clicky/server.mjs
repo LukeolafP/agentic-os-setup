@@ -30,7 +30,7 @@ import http from 'node:http'
 import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
-import { randomBytes } from 'node:crypto'
+import { randomBytes, createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import WebSocket from 'ws'
 import { query } from '@anthropic-ai/claude-agent-sdk'
@@ -104,7 +104,7 @@ async function clickyTab() {
   if (st.tab && tabs.some((t) => t.id === st.tab)) return st.tab
   const known = new Set(tabs.map((t) => t.id))
   const made = waitFor((m) => m.type === 'chat' && m.ev?.k === 'tabs' && m.ev.focus && !known.has(m.ev.focus), 5000)
-  await send({ type: 'chat-new-tab' })
+  await send({ type: 'chat-new-tab', name: 'Voice Agent' })   // its own project tab, for quick voice questions
   const m = await made
   if (!m) throw new Error('the bridge did not make a tab')
   writeState({ ...st, tab: m.ev.focus })
@@ -164,6 +164,29 @@ function actionsBlock(tools) {
   return lines.join('\n')
 }
 
+/* GTD 16 Nov 2026 (chat 2026-11-16 - Token Burn Audit): the Voice Agent's reply rules and
+   action list are about 17,000 characters. They went into Petra's chat on every spoken
+   sentence and stayed in her context, about 4,000 tokens a time. Now the full copy goes once,
+   then again only when the rules change, the OpenClicky tab changes, the chat is compacted,
+   or every RULES_EVERY voice turns; in between a one-line pointer stands in. */
+const RULES_EVERY = 15
+const rulesSent = { hash: null, tab: null, count: 0 }
+listeners.add((m) => { if (m.type === 'chat' && m.ev?.k === 'note' && /compact/i.test(m.ev.text || '')) rulesSent.hash = null })
+function rulesFor(body) {
+  const full = `${textOf(body.system)}\n${actionsBlock(body.tools)}`
+  /* the app sends the action schemas with their keys in a random order each time, so the
+     hash is taken over a key-sorted copy */
+  const sorted = (v) => Array.isArray(v) ? v.map(sorted) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sorted(v[k])])) : v
+  const hash = createHash('sha1').update(textOf(body.system) + JSON.stringify(sorted(body.tools || []))).digest('hex')
+  const tab = readState().tab || null
+  if (hash !== rulesSent.hash || tab !== rulesSent.tab || rulesSent.count >= RULES_EVERY) {
+    Object.assign(rulesSent, { hash, tab, count: 1 })
+    return full
+  }
+  rulesSent.count++
+  return '(Unchanged: follow the Voice Agent\'s reply rules and quick actions exactly as given in full earlier in this chat.)'
+}
+
 function petraMessage(body) {
   const msgs = body.messages || []
   const last = msgs[msgs.length - 1] || { content: [] }
@@ -187,7 +210,7 @@ function petraMessage(body) {
   const text = `(Voice Agent) ${question.trim()}
 
 <voice-agent>
-Luke said this out loud to the Agentic OS Voice Agent on his Mac, and it is you answering. He is not looking at this chat: he hears your reply in your voice and sees the Agentic OS pointer. ${images.length ? `His screen is attached above (${labels.join('; ')}).` : ''}
+Luke said this out loud to the Agentic OS Voice Agent on his Mac, and it is you answering. He is not looking at this chat: he hears your reply in your voice and sees the Agentic OS pointer. ${images.length ? `His screen was captured as the numbered images listed at the end of this message (${labels.join('; ')}). To see it, send the image-viewer subagent those paths with his question and where the pointer is, and answer from its reply; for a [POINT:x,y] tag, ask it for the position in pixels of the screen image it is on.` : ''}
 For this reply follow the Voice Agent's reply rules below, with these changes:
 - You are Petra. Wherever the rules say "the agentic os voice agent" or "openclicky", that is you. You keep every tool, manager and agent you normally have.
 - Open with a short first sentence, under ten words, so your voice starts straight away. Say one short line before any tool call ("Let me look."), then call it.
@@ -196,8 +219,7 @@ For this reply follow the Voice Agent's reply rules below, with these changes:
 - No markdown, lists, links, file paths or wiki links in what you say. Spoken words only, plus the tags the rules ask for. No ellipses; say numbers as words. Vary your wording from one reply to the next.
 
 The Voice Agent's reply rules:
-${textOf(body.system)}
-${actionsBlock(body.tools)}
+${rulesFor(body)}
 </voice-agent>`
   const shot = blocks.find((b) => b.type === 'image' && b.source?.type === 'base64')
   return { text, display: (said || question.trim()).slice(0, 2000), images, said: said || question.trim(), screenshotBlock: shot ? { type: 'image', source: shot.source } : null }
@@ -544,6 +566,10 @@ const server = http.createServer(async (req, res) => {
     if (!res.headersSent) json(res, 500, { error: e.message }); else res.end()
   }
 })
+/* one failed promise or a stray error must never stop the voice: log it and carry on */
+process.on('unhandledRejection', (e) => log('unhandled rejection:', String(e?.stack || e).slice(0, 300)))
+process.on('uncaughtException', (e) => log('uncaught exception:', String(e?.stack || e).slice(0, 300)))
+
 server.listen(PORT, '127.0.0.1', () => {
   log(`Petra's OpenClicky backend on http://127.0.0.1:${PORT}`)
   bridge().then(() => { log('bridge connected'); void synth('Ready.') }).catch((e) => log('bridge not reachable yet:', e.message))

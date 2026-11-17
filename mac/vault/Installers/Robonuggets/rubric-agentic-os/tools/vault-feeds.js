@@ -232,5 +232,5 @@ function run() {
   }
   return out;
 }
-module.exports = { run };
+module.exports = { run, buildRing };
 if (require.main === module) console.log(JSON.stringify(run(), null, 2));

@@ -1,0 +1,2 @@
+# store text files with LF line endings, whatever the copy on disk uses (17 Nov 2026)
+* text=auto

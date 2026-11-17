@@ -66,7 +66,7 @@ export function createVoiceAgent(deps) {
     for (const t of list) {
       seen.add(t.id)
       const cur = tabs.get(t.id) || { id: t.id, luke: '', petra: '', at: 0 }
-      const next = { ...cur, title: t.title, state: t.state, busy: t.busy }
+      const next = { ...cur, title: t.title, about: t.about || '', state: t.state, busy: t.busy }
       tabs.set(t.id, next)
       /* The work is finished when the chat's state says so (the bridge keeps it 'working' while
          Petra replies and while her managers run), not when a reply ends: a reply is often
@@ -80,7 +80,7 @@ export function createVoiceAgent(deps) {
   /* The confirmation is what Luke waits for, and Petra's voice takes a few seconds a sentence, so
      the sentence for each open chat ("Sent to the Titans chat.") and the fixed phrases are made
      ahead and kept warm; the reply then plays the moment the router has decided. */
-  const sentTo = (title) => `Sent to the ${title} chat.`
+  const sentTo = (title) => `Sent to the ${title} project.`
   const PHRASES = ['Started a new chat.', 'Okay.', "Sure, here's the tour.", 'Okay, looking.', 'There it is.', 'Moving on.', 'Faster.', 'Slower.', 'Stopping the tour.',
     'Which chat is that for?', 'Sent it across.', "I couldn't find that in the chat.", "I couldn't get that through just now."]
   let warmedAt = 0, warmedVoice = ''
@@ -123,15 +123,26 @@ export function createVoiceAgent(deps) {
       t.luke = clip(u?.text, 160); t.petra = clip(p?.text, 220); t.at = (u?.at || p?.at || 0)
     }
   }
-  async function history(tabId) {
+  async function historyEntries(tabId) {
     await send({ type: 'chat-history', tab: tabId })
     const h = await waitFor((x) => x.type === 'chat-history' && x.tab === tabId, 6000)
     return (h?.log || []).filter((e) => (e.k === 'user' || e.k === 'text') && e.text)
+  }
+  /* the last turns of the Voice Agent's own conversation (its Petra tab), so "send that prompt"
+     has something to point at (17 Nov 2026) */
+  async function voiceTail() {
+    const id = petraTab(); if (!id) return ''
+    const lines = (await historyEntries(id)).slice(-6).map((e) => `${e.k === 'user' ? 'Luke' : 'Petra'}: ${clip(e.text, 900)}`)
+    let out = lines.join('\n'); if (out.length > 5000) out = out.slice(-5000)
+    return out
+  }
+  async function history(tabId) {
+    return (await historyEntries(tabId))
       .map((e) => `${e.k === 'user' ? 'Luke' : 'Petra'}: ${e.text}`).join('\n\n')
   }
   const chatList = () => [...tabs.values()].filter((t) => t.id !== petraTab())
     .sort((a, b) => b.at - a.at)
-    .map((t) => `- id ${t.id} | "${t.title}" | ${t.busy ? 'working' : t.state || 'idle'} | Luke last: ${t.luke || '—'} | Petra last: ${t.petra || '—'}`)
+    .map((t) => `- id ${t.id} | project "${t.title}"${t.about ? ` | now: ${t.about}` : ''} | ${t.busy ? 'working' : t.state || 'idle'} | Luke last: ${t.luke || '—'} | Petra last: ${t.petra || '—'}`)
     .join('\n') || '(no chats open)'
 
   /* ------------------------------------------------------------ the app's event stream */
@@ -256,37 +267,41 @@ A page is an .html file in the vault; a note is a .md; an image is a .png/.jpg; 
 
 
   /* ------------------------------------------------------------ routing */
-  const ROUTER = `You route what Luke just said out loud to his Agentic OS. He is looking at his screen (attached), not at any chat. Each open chat is a conversation with Petra about one piece of work. Reply with one JSON object and nothing else.
+  const ROUTER = `You route what Luke just said out loud to his Agentic OS. He is looking at his screen (attached), not at any chat. Each open chat is one PROJECT with Petra, with a fixed name Luke gave it (like "Black Friday Secrets Pages"). A project holds every page, piece, fix and follow-up of that project, so different tasks for the same project belong in the same chat. Reply with one JSON object and nothing else.
 
 Routes:
-- "chat": it is work, a change, feedback or a question for one of the open chats: the thing on his screen or the topic names it. Give its id.
-- "new": a new piece of work that fits none of the chats. Give a 3 to 6 word title.
-- "transfer": he wants something from one chat given to another. Give fromTab, toTab and what (what to take, in his words).
+- "chat": it is work, a change, feedback or a question that belongs to one of the open projects: the thing on his screen, the product, the page or the topic ties it to that project, even when it is a different task from the one the chat did last. Give its id. This is the usual route.
+- "new": it clearly belongs to none of the open projects: a different product, campaign or job altogether. A different task, page or step of an existing project is NOT new. Give "title": a suggested project name, 2 to 5 words in Title Case. Luke is asked to name it before anything starts.
+- "name": only when you just asked him to name a new project (said below): his answer is the name. Give "title" = the name as he said it, in Title Case, or your suggestion if he accepts it ("yes", "that's fine", "sure").
+- "transfer": he wants something from one project chat given to another. Give fromTab, toTab and what (what to take, in his words).
+- "forward": he points back at something already said or worked out and wants it sent to a chat: "send that prompt to the Black Friday chat", "send what I just said to Titans", "send all those changes to it". His words now are an instruction, not the content, so never use "chat" for these. Give "toTab", "items" = the # numbers of his own recent messages to send, in order (from "What he said lately"), and set "fromVoice": true with "what" (what to copy, in a few words, like "the final prompt Petra drafted") when the content is in your own conversation with him (shown below). Both can be given.
 - "voice": he is talking to the Voice Agent itself: about what is on screen right now, a quick question, a quick Mac action (open an app, play music, volume), an answer to the question or offer the Voice Agent just made (yes, no, which one), or a tour command while a tour is running (faster, slower, skip, move on, stop, or a question about what is being shown).
 - "ask": two or more chats could be meant and the screen does not settle it. Give a one-line question naming them.
 - "resend": he says the LAST message went to the wrong chat ("no, I meant the Secrets chat", "that was for the Titans chat", "not that chat"). Give the right tab; his original words are sent again there, and the wrong chat is told to drop it.
+- Whenever you are waiting on which chat a request goes to (said below), set "adds": true when what he just said adds more to that request itself (another change, more detail), whatever route you pick; it is then sent along with it. Leave it false when he only answers or comments on where it goes.
 - "clarify": it could continue the last thing he sent OR be a different piece of work, and nothing settles it (no page on screen that names the chat, no project named). Ask one short line, like "Is that for the Secrets page you just sent, or something else?" More questions are better than a wrong chat. Give the candidate tab ids.
 - "question": one of Petra's open questions (listed below) is involved: "what's the question?", "what does she want?", "read it to me" → set action "read" and the tab; an answer to it → set action "answer" and the tab, with "answer" = his answer in his words.
 - "check": he asks whether what is on screen is the result ("is this it?", "is this the right page?") after you offered or started a tour → route "check".
 
 Always give "say": one short spoken sentence, under twelve words, confirming what you did and where it went, like "Sent to the Secrets page chat." For "voice" say nothing (empty). For "ask", say is the question.
 
-{"route":"chat|new|transfer|voice|ask|resend|clarify|question|check","tab":"id","title":"…","fromTab":"id","toTab":"id","what":"…","say":"…","yes":true|false,"tourControl":"faster|slower|skip|stop|question|none","candidates":["id"],"action":"read|answer","answer":"…"}
+{"route":"chat|new|name|transfer|forward|voice|ask|resend|clarify|question|check","items":[0],"fromVoice":true|false,"adds":true|false,"tab":"id","title":"…","fromTab":"id","toTab":"id","what":"…","say":"…","yes":true|false,"tourControl":"faster|slower|skip|stop|question|none","candidates":["id"],"action":"read|answer","answer":"…"}
 "yes" only when an offer or question is open: whether he accepted. "tourControl" only while a tour runs.`
 
   let pendingAsk = null           // { candidates, transcript, images, at }
+  let pendingNew = null           // { transcript, images, suggestion, at }: a new project waiting for its name
   let pendingOffer = null         // { tab, title, text, at, result }
   let lastRouted = null           // { tab, said, images, at }: the last message sent to a chat, for "no, the other chat"
   /* ---- memory: what he said and where it went, kept on disk so a restart forgets nothing (12 Nov 2026) */
   let memory = []
   try { memory = JSON.parse(fs.readFileSync(MEMORY, 'utf8')).slice(-60) } catch {}
   function remember(said, route, tab, say) {
-    memory.push({ at: Date.now(), said: clip(said, 160), route, tab: tab || null, title: tab ? (tabs.get(tab)?.title || '') : '', say: clip(say, 100) })
+    memory.push({ at: Date.now(), said: String(said || '').trim().slice(0, 6000), route, tab: tab || null, title: tab ? (tabs.get(tab)?.title || '') : '', say: clip(say, 100) })
     memory = memory.slice(-60)
     try { fs.writeFileSync(MEMORY, JSON.stringify(memory, null, 1)) } catch {}
   }
   const ago = (t) => { const m = Math.round((Date.now() - t) / 60_000); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : `${Math.round(m / 60)} h ago` }
-  const memoryLines = () => memory.slice(-10).map((m) => `- ${ago(m.at)}: "${m.said}" → ${m.route === 'chat' || m.route === 'resend' ? `the "${m.title}" chat` : m.route}${m.say ? ` (${m.say})` : ''}`).join('\n')
+  const memoryLines = () => memory.map((m, i) => [m, i]).slice(-10).map(([m, i]) => `- #${i}, ${ago(m.at)}: "${clip(m.said, 600)}" → ${m.route === 'chat' || m.route === 'resend' || m.route === 'forward' ? `the "${m.title}" chat` : m.route}${m.say ? ` (${m.say})` : ''}`).join('\n')
   /* ---- Petra's open questions, by chat: a card he has to answer, a manager's question, or a reply that ends asking him */
   const questions = new Map()     // tab id -> { kind: 'card'|'manager'|'text', id, qid, text, options, at }
   listeners.add((m) => {
@@ -311,6 +326,7 @@ Always give "say": one short spoken sentence, under twelve words, confirming wha
   async function route(said, images, screenshotBlock) {
     await refreshTabs()
     const ctx = []
+    if (pendingNew && Date.now() - pendingNew.at < 180_000) ctx.push(`You just told him this sounds like a new project and asked what to call it (you suggested "${pendingNew.suggestion}"). The work he asked for: "${clip(pendingNew.transcript, 300)}". If his answer is a name, or accepts your suggestion, route "name" with "title". If he says it belongs to one of the open projects, route "chat" with that id (his original words are sent there). If he drops it, route "voice".`)
     if (pendingAsk && Date.now() - pendingAsk.at < 120_000) ctx.push(`You just asked him: "${pendingAsk.question}" about these chats: ${pendingAsk.candidates.join(', ')}. His answer now picks one of them: route "chat" with that id, and send his ORIGINAL words: "${pendingAsk.transcript}".`)
     if (pendingOffer && Date.now() - pendingOffer.at < 180_000) ctx.push(pendingOffer.retry
       ? `You asked him to open "${pendingOffer.title}" on screen and say ready. If this is him saying it is open (ready, go, it's up, show me), route "voice" and set yes; if he gives up, set yes false.`
@@ -318,7 +334,8 @@ Always give "say": one short spoken sentence, under twelve words, confirming wha
     if (lastRouted && Date.now() - lastRouted.at < 5 * 60_000) ctx.push(`${Math.round((Date.now() - lastRouted.at) / 1000)} s ago you sent "${clip(lastRouted.said, 120)}" to the "${tabs.get(lastRouted.tab)?.title || lastRouted.tab}" chat (id ${lastRouted.tab}). If he says it should have gone to another chat, route "resend" with that chat's id.`)
     if (tour.running) ctx.push(`A tour of "${tour.title}" is running (step ${tour.step + 1} of ${tour.steps.length}). Tour commands and questions about it are route "voice" with tourControl set.`)
     const ql = questionLines(); if (ql) ctx.push(`Petra's open questions:\n${ql}`)
-    const ml = memoryLines(); if (ml) ctx.push(`What he said lately, and where it went:\n${ml}`)
+    const ml = memoryLines(); if (ml) ctx.push(`What he said lately, numbered, and where it went:\n${ml}`)
+    try { const vt = await voiceTail(); if (vt) ctx.push(`Your own spoken conversation with him (the Voice Agent chat), oldest first:\n${vt}`) } catch {}
     const content = [
       ...(screenshotBlock ? [{ type: 'text', text: 'His screen now:' }, screenshotBlock] : []),
       { type: 'text', text: `Open chats, most recent first:\n${chatList()}\n\n${ctx.join('\n\n')}\n\nLuke said: "${said}"` },
@@ -345,20 +362,25 @@ Always give "say": one short spoken sentence, under twelve words, confirming wha
   async function newChat(said, images, title) {
     const known = new Set(tabs.keys())
     const made = waitFor((m) => m.type === 'chat' && m.ev?.k === 'tabs' && m.ev.focus && !known.has(m.ev.focus), 5000)
-    await send({ type: 'chat-new-tab' })
+    await send({ type: 'chat-new-tab', name: title })
     const m = await made
     if (!m) throw new Error('the bridge did not make a tab')
-    tabs.set(m.ev.focus, { id: m.ev.focus, title: title || 'New chat', luke: '', petra: '', at: Date.now() })
+    tabs.set(m.ev.focus, { id: m.ev.focus, title: title || 'New project', luke: '', petra: '', at: Date.now() })
     await sendTo(m.ev.focus, said, images, said)
     return m.ev.focus
+  }
+  /* the part of a chat he asked for, word for word, or null */
+  async function extract(fromId, what, label) {
+    const text = await history(fromId)
+    const piece = await sdkCall({ model: 'haiku', system: 'From a chat transcript, copy out exactly the part asked for, verbatim, with nothing added and no commentary. When it was drafted and then revised, copy the latest version. If it is not there, reply NOT FOUND.',
+      content: [{ type: 'text', text: `Wanted: ${what}\n\nTranscript of the "${label}" chat:\n\n${text.slice(-60_000)}` }] })
+    return /^NOT FOUND/i.test(String(piece || '').trim()) || !String(piece || '').trim() ? null : String(piece).trim()
   }
   async function transfer(r, said) {
     const from = tabs.get(r.fromTab), to = tabs.get(r.toTab)
     if (!from || !to) return false
-    const text = await history(from.id)
-    const piece = await sdkCall({ model: 'haiku', system: 'From a chat transcript, copy out exactly the part asked for, verbatim, with nothing added and no commentary. If it is not there, reply NOT FOUND.',
-      content: [{ type: 'text', text: `Wanted: ${r.what}\n\nTranscript of the "${from.title}" chat:\n\n${text.slice(-60_000)}` }] })
-    if (/^NOT FOUND/i.test(piece.trim())) return false
+    const piece = await extract(from.id, r.what, from.title)
+    if (!piece) return false
     await send({ type: 'chat-send', tab: to.id, text: `(From the "${from.title}" chat, passed on by the Voice Agent at Luke's request.)\n\n${piece.trim()}\n\nLuke said: ${said}`, display: `From the "${from.title}" chat: ${clip(piece, 200)}`, voice: true })
     routed.set(to.id, { title: to.title, at: Date.now() })
     return true
@@ -386,17 +408,42 @@ Always give "say": one short spoken sentence, under twelve words, confirming wha
     }
     if (r.route === 'check') { remember(said, 'check'); return checkResult(reply) }
     if (r.route === 'question') return handleQuestion(r, said, images, reply)
-    if (r.route === 'voice') { pendingAsk = null; remember(said, 'voice'); return askPetra(b, req, res) }
+    if (r.route === 'voice') { pendingAsk = null; pendingNew = null; remember(said, 'voice'); return askPetra(b, req, res) }
+    /* a new project is never started unnamed: Luke names it first (17 Nov 2026) */
+    if (r.route === 'new') {
+      const first = pendingAsk && Date.now() - pendingAsk.at < 120_000 ? pendingAsk : null
+      const suggestion = clip(r.title || 'New Project', 60)
+      pendingNew = { transcript: first?.transcript || said, images: first?.images || images, suggestion, at: Date.now() }
+      pendingAsk = null
+      remember(said, 'new', null, 'asked for a name')
+      return reply(`That sounds like a new project. What should I call it? Maybe ${suggestion}?`, true)
+    }
     if (r.route === 'ask' || r.route === 'clarify') {
-      pendingAsk = { question: r.say, candidates: (r.candidates || []).length ? r.candidates : [...tabs.keys()], transcript: said, images, at: Date.now() }
+      /* 17 Nov 2026: while it asks which chat, the request he made is kept; his answers no longer
+         replace it, and anything he adds to the request is appended to it */
+      const prev = pendingAsk && Date.now() - pendingAsk.at < 120_000 ? pendingAsk : null
+      const transcript = prev ? (r.adds ? `${prev.transcript}\n\n${said}` : prev.transcript) : said
+      const imgs = prev ? [...(prev.images || []), ...(r.adds ? images || [] : [])] : images
+      pendingAsk = { question: r.say, candidates: (r.candidates || []).length ? r.candidates : [...tabs.keys()], transcript, images: imgs, at: Date.now() }
       remember(said, r.route, null, r.say)
       return reply(r.say || 'Which chat is that for?', true)
     }
-    const original = pendingAsk && Date.now() - pendingAsk.at < 120_000 ? pendingAsk : null
-    pendingAsk = null
+    const naming = pendingNew && Date.now() - pendingNew.at < 180_000 ? pendingNew : null
+    const original = naming || (pendingAsk && Date.now() - pendingAsk.at < 120_000 ? pendingAsk : null)
+    pendingAsk = null; pendingNew = null
     try {
-      if (r.route === 'chat') { await sendTo(r.tab, original?.transcript || said, original?.images || images); remember(original?.transcript || said, 'chat', r.tab); return reply(sentTo(tabs.get(r.tab)?.title), false) }
-      if (r.route === 'new') { const id = await newChat(original?.transcript || said, original?.images || images, r.title); remember(original?.transcript || said, 'chat', id); return reply('Started a new chat.', false) }
+      if (r.route === 'chat') {
+        const text = original ? (r.adds ? `${original.transcript}\n\n${said}` : original.transcript) : said
+        const imgs = original ? [...(original.images || []), ...(r.adds ? images || [] : [])] : images
+        await sendTo(r.tab, text, imgs); remember(text, 'chat', r.tab); return reply(sentTo(tabs.get(r.tab)?.title), false)
+      }
+      if (r.route === 'name') {
+        const name = clip(r.title || naming?.suggestion || '', 80)
+        if (!naming || !name) return reply('Sorry, what was the project for again?', true)
+        const id = await newChat(naming.transcript, naming.images, name)
+        remember(naming.transcript, 'chat', id)
+        return reply(`Started the ${name} project.`, false)
+      }
       if (r.route === 'resend') {
         const wrong = lastRouted; lastRouted = null
         await send({ type: 'chat-send', tab: wrong.tab, text: '(Voice Agent) Luke says his last message was meant for another chat. Drop it: undo anything you started for it, and carry on with what this chat was doing.', display: 'That last message was for another chat; please drop it.', voice: true })
@@ -405,7 +452,19 @@ Always give "say": one short spoken sentence, under twelve words, confirming wha
         remember(said, 'resend', r.tab)
         return reply(sentTo(tabs.get(r.tab)?.title), false)
       }
-      if (r.route === 'transfer') { const ok = await transfer(r, said); return reply(ok ? (r.say || 'Sent it across.') : "I couldn't find that in the chat.", false) }
+      if (r.route === 'transfer') { const ok = await transfer(r, said); remember(said, 'transfer', ok ? r.toTab : null); return reply(ok ? (r.say || 'Sent it across.') : "I couldn't find that in the chat.", false) }
+      if (r.route === 'forward') {
+        const to = tabs.get(r.toTab)
+        if (!to) { remember(said, 'ask', null, 'which chat'); return reply('Which project should that go to?', true) }
+        const parts = []
+        for (const n of (Array.isArray(r.items) ? r.items : []).map(Number)) if (Number.isInteger(n) && memory[n]?.said) parts.push(memory[n].said)
+        if (r.fromVoice && petraTab()) { const piece = await extract(petraTab(), r.what || 'what he is asking for', 'the Voice Agent'); if (piece) parts.push(piece) }
+        if (!parts.length) { remember(said, 'forward', null, 'found nothing'); return reply("I couldn't find what to send. Which part did you mean?", true) }
+        const body = `(Passed on by the Voice Agent at Luke's request.)\n\n${parts.join('\n\n')}\n\nLuke said: ${said}`
+        await sendTo(to.id, body, null, `Passed on: ${clip(parts.join(' '), 300)}`)
+        remember(said, 'forward', to.id)
+        return reply(sentTo(to.title), false)
+      }
     } catch (e) { log('route action failed:', e.message); return reply("I couldn't get that through just now.", false) }
     return askPetra(b, req, res)
   }
@@ -613,10 +672,18 @@ Rules: a reply that only acknowledges and lists what will change is "plan" even 
   async function elevenTTS(text) {
     const v = elevenVoice(); if (!v || !elevenAvailable()) return null
     for (let attempt = 0; attempt < 4; attempt++) {
-      const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(v.voiceId)}?output_format=mp3_44100_128`, {
-        method: 'POST', headers: { 'xi-api-key': v.key, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, model_id: 'eleven_flash_v2_5', voice_settings: { stability: 0.5, similarity_boost: 0.75 } }),
-      })
+      let r
+      try {
+        r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(v.voiceId)}?output_format=mp3_44100_128`, {
+          method: 'POST', headers: { 'xi-api-key': v.key, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, model_id: 'eleven_flash_v2_5', voice_settings: { stability: 0.5, similarity_boost: 0.75 } }),
+          signal: AbortSignal.timeout(20_000),
+        })
+      } catch (e) {                                                        // offline, DNS, timeout: hers for ten minutes
+        elevenDownUntil = Date.now() + 10 * 60_000; elevenDownWhy = 'ElevenLabs could not be reached'
+        log(`elevenlabs tts unreachable (${e.cause?.code || e.name || e.message}); Petra's own voice for ten minutes`)
+        return null
+      }
       if (r.ok) return Buffer.from(await r.arrayBuffer())
       const detail = (await r.text()).slice(0, 160)
       if (r.status === 429 && !/quota/i.test(detail) && attempt < 3) { await new Promise((x) => setTimeout(x, 500 * (attempt + 1))); continue }   // too many at once: wait and try again

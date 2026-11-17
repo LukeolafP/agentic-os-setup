@@ -195,6 +195,20 @@
       "role": "Files every item on the Agentic OS ring around Petra into the ring's own folder tree, organised the way Luke thinks about the work (project,",
       "color": "#00c853",
       "icon": "Rune"
+    },
+    {
+      "id": "chrome-operator",
+      "name": "Chrome Operator",
+      "role": "Does one small batch of browser work in Chrome (Claude in Chrome tools) and reports back in text only, so its screenshots never enter the se",
+      "color": "#00c853",
+      "icon": "Drift"
+    },
+    {
+      "id": "image-viewer",
+      "name": "Image Viewer",
+      "role": "Looks at photos, screenshots or rendered images by file path and answers a question about them in text, so the images never enter the sessio",
+      "color": "#00c853",
+      "icon": "Orb"
     }
   ]
 }

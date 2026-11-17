@@ -66,6 +66,15 @@ belongs under something like `Blueprint Funnel / Order page / GHL sections`.
   Alpha Carrier upsell, Success page, Checkout, 404 page; under a page, its versions (Round 1
   directions, v1 to v4), its GHL sections, drafts or mockups. Build tools, previews and test
   fixtures go in a Build tools folder inside the project, never at the top.
+- **Funnel pages: always `Funnels / <product> / <page>`.** Any sales, order, upsell, success or
+  checkout page for a product Luke sells, wherever its file sits (`Content/Website/Final/`,
+  `Content/Website/Funnels/<Product>/`, a new folder), goes under the top-level Funnels folder,
+  in the product's existing folder: Blueprint, Alpha Carrier, 10 Drivers in 10 Days, Secrets,
+  Elite (Driver Recruitment Elite), Advisory Board (Trucking Titans Advisory Board), Inner
+  Circle. A product with no folder yet gets a new one under Funnels with a one-line note. The
+  newest finished page is labelled `★ Final (…)`; the placeholder it replaces stays beside it.
+  Its brand book, box renders and logo sheets go under `Brand / <product>`. (Set 5 Nov 2026,
+  [[Ring Auto Filing]].)
 - **Reports and plans: type, then year, then month.** `Reports / Instagram performance / 2026 / September`,
   `Content Plans / 2026 / December`. The month is the month the report or plan is about, taken
   from its title; fall back to the month it was made.

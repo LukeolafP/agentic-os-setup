@@ -177,9 +177,11 @@ if (Test-Path $SettingsDst) {
   if (-not ($cur -is [PSCustomObject])) { $cur = New-Object PSObject }
 }
 $cur | Add-Member -NotePropertyName hooks -NotePropertyValue $new.hooks -Force
+# the 200k auto-compact window (Token Burn Audit, 16 Nov 2026): set unless this vault already chose one
+if ($new.autoCompactWindow -and -not $cur.autoCompactWindow) { $cur | Add-Member -NotePropertyName autoCompactWindow -NotePropertyValue $new.autoCompactWindow -Force }
 New-Item -ItemType Directory -Force -Path (Split-Path $SettingsDst -Parent) | Out-Null
 [IO.File]::WriteAllText($SettingsDst, ($cur | ConvertTo-Json -Depth 20), $Utf8)
-Ok '.claude\settings.json (hooks set, other settings kept)'
+Ok '.claude\settings.json (hooks and auto-compact window set, other settings kept)'
 # notes Petra relies on, only if the vault does not have them (a synced vault will)
 foreach ($f in @('CLAUDE.md', 'Memory\Automations\Chat Logging.md', 'Memory\Automations\Agent Report Filing.md')) {
   $to = Join-Path $Vault $f

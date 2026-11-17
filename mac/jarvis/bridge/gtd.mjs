@@ -25,7 +25,17 @@ import { fileURLToPath } from 'node:url'
 
 export const GTD = process.env.JARVIS_MODE === 'gtd'
 export const VAULT = realpathSync(process.env.JARVIS_CWD || join(homedir(), 'Documents/GTD'))
-export const CLAUDE_BIN = process.env.JARVIS_CLAUDE_BIN || join(homedir(), '.local/bin/claude')
+export const WIN = process.platform === 'win32'
+export const CLAUDE_BIN = process.env.JARVIS_CLAUDE_BIN || join(homedir(), '.local/bin', WIN ? 'claude.exe' : 'claude')
+/* open a file, app or obsidian:// link the way this OS does (the vault's rule: Obsidian, or Chrome for Google links) */
+export function openWith(target, app = null) {
+  if (WIN) {
+    const args = app ? ['/c', 'start', '', app === 'Google Chrome' ? 'chrome' : app, target] : ['/c', 'start', '', target]
+    return spawn('cmd', args, { stdio: 'ignore', windowsHide: true, detached: true }).unref()
+  }
+  return spawn('open', app ? ['-a', app, target] : [target], { stdio: 'ignore', detached: true }).unref()
+}
+
 const RUBRIC = process.env.GTD_RUBRIC_URL || 'http://127.0.0.1:5050'
 const KIT = join(VAULT, 'Installers/Robonuggets')
 const OS_ARTIFACTS = process.env.GTD_OS_ARTIFACTS || join(KIT, 'rubric-agentic-os/artifacts')
@@ -272,6 +282,7 @@ function runJob(j) {
       const line = buf.slice(0, nl); buf = buf.slice(nl + 1)
       let m; try { m = JSON.parse(line) } catch { continue }
       recordStream(j.id, m)
+      trackTask(m, j.id)
       if (m.type === 'assistant') {
         for (const b of m.message?.content ?? []) {
           if (b.type === 'tool_use') {
@@ -374,7 +385,7 @@ const sttWaiting = new Map()
 let sttMlxFailed = process.env.GTD_STT_ENGINE === 'whisper'
 function sttWorker() {
   if (stt && !stt.killed) return stt
-  const mlx = !sttMlxFailed
+  const mlx = !sttMlxFailed && process.platform === 'darwin' && process.arch === 'arm64'   // Parakeet on MLX is Apple Silicon only
   stt = mlx
     ? spawn(join(homedir(), 'Coding/jarvis/.tts-venv/bin/python'), [join(HERE, 'stt_mlx.py')], { stdio: ['pipe', 'pipe', 'ignore'] })
     : spawn(PYTHON, [join(HERE, 'stt_worker.py')], { stdio: ['pipe', 'pipe', 'inherit'] })
@@ -514,6 +525,9 @@ export function trackToolUse(owner, block) {
   const input = block.input || {}
   if (AGENT_TOOLS.has(block.name)) {
     addInstance({ iid: block.id, agent: input.subagent_type || 'general-purpose', parent: owner, label: input.description || input.prompt || '', status: 'running' })
+    const inst = instances.get(block.id)
+    inst.root = instances.get(owner)?.root || owner
+    if (input.run_in_background) inst.bg = true
     return
   }
   const op = FILE_TOOLS[block.name]
@@ -530,7 +544,32 @@ export function trackToolUse(owner, block) {
 export function trackToolResult(block) {
   const inst = instances.get(block.tool_use_id)
   if (!inst || inst.ended) return
+  if (inst.bg && !block.is_error) return          // "Async agent launched": it has only started, see trackTask
   setInstance(block.tool_use_id, { status: block.is_error ? 'failed' : 'done', ended: Date.now() })
+}
+/* GTD 5 Nov 2026: background helpers. An Agent call with run_in_background answers at once
+   ("Async agent launched"), so its copy was marked done the moment it started and never showed
+   on the OS. It now stays running until the SDK says it settled: task_notification (an edge,
+   keyed by the Agent call's tool_use_id), or its task missing from background_tasks_changed
+   (the level, per session) when that bookend never comes. `root` is the session the stream
+   belongs to (a manager id, a job id, or 'petra'), so one session's level never closes another's. */
+const taskOwner = new Map()   // SDK task_id -> instance iid
+export function trackTask(msg, root) {
+  if (msg?.type !== 'system') return
+  if (msg.subtype === 'task_started' && msg.tool_use_id && instances.has(msg.tool_use_id)) {
+    instances.get(msg.tool_use_id).task = msg.task_id; taskOwner.set(msg.task_id, msg.tool_use_id)
+  } else if (msg.subtype === 'task_updated' && msg.patch?.is_backgrounded) {
+    const inst = instances.get(taskOwner.get(msg.task_id)); if (inst) inst.bg = true     // a foreground helper sent to the background
+  } else if (msg.subtype === 'task_notification') {
+    const iid = msg.tool_use_id || taskOwner.get(msg.task_id), inst = instances.get(iid)
+    taskOwner.delete(msg.task_id)
+    if (inst && OPEN(inst)) setInstance(iid, { status: msg.status === 'completed' ? 'done' : 'failed', ended: Date.now() })
+  } else if (msg.subtype === 'background_tasks_changed') {
+    const live = new Set((msg.tasks || []).map((x) => x.task_id))
+    setTimeout(() => {      // the level comes just before the bookend; give the notification first say on done or failed
+      for (const inst of instances.values()) if (inst.bg && inst.task && inst.root === root && OPEN(inst) && !live.has(inst.task)) setInstance(inst.iid, { status: 'done', ended: Date.now() })
+    }, 2000)
+  }
 }
 export function setPetra(status) { if (petraStatus !== status) { petraStatus = status; flush() } }
 
@@ -615,7 +654,7 @@ export function getTranscript(iid) {
    so she starts speaking about a second after a sentence is written. If Voxtral is not
    available, Kokoro (af_heart) takes over with whole sentences. Both send the same
    messages: chunks of WAV, then done. */
-const TTS_ENGINE = process.env.GTD_TTS_ENGINE || 'voxtral'
+const TTS_ENGINE = process.env.GTD_TTS_ENGINE || (process.platform === 'darwin' && process.arch === 'arm64' ? 'voxtral' : 'kokoro')   // Voxtral is Apple Silicon only
 const VOX_VOICE = process.env.GTD_TTS_VOICE || 'casual_female'
 const KOKORO_VOICE = 'af_heart'
 const TTS_PY = join(homedir(), 'Coding/jarvis/.tts-venv/bin/python')

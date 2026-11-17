@@ -360,6 +360,33 @@
     .team-quote { font-size: 12px; padding: 12px; }
     .team-title { font-size: 20px; }
   }
+
+  /* ==================== AGENT TEAMS (GTD 29 Oct 2026) ==================== */
+  .agent-row.team-lead { cursor: pointer; }
+  .agent-row.team-lead:focus-visible, .agent-card-big.team-lead:focus-visible, .team-agent-card.team-lead:focus-visible { outline: 2px solid var(--team, var(--accent)); outline-offset: 1px; }
+  .agent-row.team-lead .agent-name { color: var(--text); }
+  .rt-count { margin-left: auto; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; font-size: 9.5px; font-weight: 700; line-height: 16px; text-align: center; color: #fff; background: var(--team, var(--accent)); flex-shrink: 0; }
+  .rt-count:empty { display: none; }
+  .rt-mark { width: 6px; height: 6px; border-radius: 50%; background: var(--team); flex-shrink: 0; align-self: center; }
+  .agent-card-big.team-lead, .team-agent-card.team-lead { cursor: pointer; border-color: color-mix(in srgb, var(--team) 45%, var(--border)); }
+  .rt-members { font-size: 11px; color: var(--text-secondary); margin-bottom: 10px; }
+  .rt-pop { position: fixed; z-index: 1000; width: 300px; max-width: calc(100vw - 16px); padding: 8px; border-radius: 12px; background: #0d0d0d; border: 1px solid #262626;
+    box-shadow: 0 16px 40px rgba(0,0,0,.6); font-family: 'Outfit', sans-serif; opacity: 0; visibility: hidden; transform: translateY(3px); transition: opacity .12s, transform .12s, visibility 0s .12s; }
+  .rt-pop.show { opacity: 1; visibility: visible; transform: none; transition: opacity .12s, transform .12s; }
+  .rt-pop .rt-h { display: flex; align-items: baseline; gap: 8px; padding: 4px 6px 8px; border-bottom: 1px solid var(--border); }
+  .rt-pop .rt-h b { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  .rt-pop .rt-h span:last-child { margin-left: auto; font-size: 10px; color: var(--text-muted); white-space: nowrap; }
+  .rt-pop .rt-list { display: flex; flex-direction: column; gap: 1px; padding-top: 4px; max-height: 60vh; overflow-y: auto; }
+  .rt-pop .rt-row { display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 8px; }
+  .rt-pop .rt-row:hover, .rt-pop .rt-row:focus-within { background: rgba(255,255,255,.04); }
+  .rt-pop .rt-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .rt-pop .rt-t b { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rt-pop .rt-t small { font-size: 10.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rt-pop .rt-st { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+  .rt-pop .rt-row.active .rt-st { color: var(--green); }
+  .rt-pop button { font: inherit; font-size: 9px; letter-spacing: .08em; color: var(--text-secondary); background: none; border: 1px solid #262626; border-radius: 6px; padding: 3px 6px; cursor: pointer; }
+  .rt-pop button:hover, .rt-pop button:focus-visible { color: var(--text); border-color: var(--team, var(--accent)); outline: none; }
+  @media (prefers-reduced-motion: reduce) { .rt-pop, .rt-pop.show { transition: none; transform: none; } }
 </style>
 </head>
 <body>
@@ -567,6 +594,114 @@
 // ==================== GLOBAL TAB SHOW REGISTRY ====================
 window.__onTabShow = {};
 
+// ==================== AGENT TEAMS (GTD 29 Oct 2026) ====================
+/* An agent team (team, teamRole lead|member and a member's lead, copied from Agents/<id>.md
+   into the configs by tools/agents.mjs) shows as its lead alone, "BP · Creative Director";
+   hovering, focusing or tapping the lead lists the members and their live status. Used by
+   the sidebar, the Agents tab and the Team tab. CALL on a member asks the Agentic OS (this
+   console's parent page) to type a request for it into Petra's chat. */
+window.__teams = (function() {
+  const TEAMS = { 'blueprint': { abbr: 'BP', name: 'Blueprint', color: '#1A8CF6' }, 'alpha-carrier': { abbr: 'AC', name: 'Alpha Carrier', color: '#E10600' } };
+  const meta = t => TEAMS[t] || { abbr: String(t || '').split(/[-_\s]+/).map(w => w[0] || '').join('').toUpperCase(), name: String(t || '').replace(/-/g, ' '), color: '' };
+  const esc = t => { const d = document.createElement('div'); d.textContent = t == null ? '' : t; return d.innerHTML; };
+  const inFrame = window.parent !== window;
+  const status = {};                        // id -> the last /api/agent-status entry
+  function leadOf(a, list) {
+    if (!a || a.teamRole === 'lead') return null;
+    if (a.lead && a.lead !== a.id && list.some(x => x.id === a.lead)) return a.lead;
+    if (a.team) { const l = list.find(x => x.team === a.team && x.teamRole === 'lead' && x.id !== a.id); if (l) return l.id; }
+    return null;
+  }
+  function group(list) {
+    const top = [], members = {};
+    for (const a of list) { const l = leadOf(a, list); if (l) (members[l] = members[l] || []).push(a); else top.push(a); }
+    return { top, members };
+  }
+  function strip(name, t) { const n = String(name || ''); for (const p of [t.name, t.abbr]) if (p && n.toLowerCase().startsWith(p.toLowerCase() + ' ')) return n.slice(p.length + 1); return n; }
+  const label = lead => meta(lead.team).abbr + ' \u00b7 ' + strip(lead.name, meta(lead.team));
+  const color = lead => meta(lead.team).color || lead.color || '#58abf5';
+  const working = ids => ids.filter(id => status[id] && (status[id].status === 'active' || status[id].status === 'waiting')).length;
+  function stText(id) {
+    const s = status[id]; if (!s) return 'idle';
+    if (s.status === 'active' || s.status === 'waiting') return 'working';
+    if (s.status === 'recent' && s.ageMin != null) return s.ageMin === 0 ? 'just now' : s.ageMin < 60 ? s.ageMin + 'm ago' : Math.floor(s.ageMin / 60) + 'h ago';
+    return 'idle';
+  }
+  const firstSentence = t => { const m = String(t || '').match(/^(.+?[.!?])(\s|$)/); return m ? m[1] : String(t || ''); };
+  function rowsHtml(lead, members) {
+    const all = [lead].concat(members || []);
+    const w = working(all.map(a => a.id));
+    return '<div class="rt-h"><span class="rt-mark"></span><b>' + esc(label(lead)) + '</b><span>' + (members || []).length + ' agents' + (w ? ' \u00b7 ' + w + ' working' : '') + '</span></div><div class="rt-list">' +
+      all.map((a, k) => {
+        const st = stText(a.id), task = status[a.id] && status[a.id].status === 'active' ? status[a.id].lastTask : '';
+        return '<div class="rt-row ' + (st === 'working' ? 'active' : '') + '" data-id="' + esc(a.id) + '"><span class="agent-dot ' + esc((status[a.id] || {}).status || 'idle') + '"></span>' +
+          '<span class="rt-t"><b>' + esc(strip(a.name, meta(a.team))) + (k === 0 ? ' \u00b7 lead' : '') + '</b><small>' + esc(task || firstSentence(a.description || a.role || '')) + '</small></span>' +
+          '<span class="rt-st">' + esc(st) + '</span>' + (inFrame ? '<button data-call="' + esc(a.id) + '" title="Ask Petra to queue ' + esc(a.name) + '">CALL</button>' : '') + '</div>';
+      }).join('') + '</div>';
+  }
+
+  const pop = document.createElement('div'); pop.className = 'rt-pop'; pop.setAttribute('role', 'dialog');
+  document.body.appendChild(pop);
+  let cur = null, hideT = null, returning = false;
+  function place() {
+    if (!cur) return;
+    const r = cur.anchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight, pad = 8;
+    let x, y;
+    if (cur.side === 'right' && r.right + 8 + w < innerWidth - pad) { x = r.right + 8; y = r.top - 8; }
+    else { x = r.left + r.width / 2 - w / 2; y = r.bottom + 6; if (y + h > innerHeight - pad) y = r.top - h - 6; }
+    pop.style.left = Math.round(Math.max(pad, Math.min(innerWidth - w - pad, x))) + 'px';
+    pop.style.top = Math.round(Math.max(pad, Math.min(innerHeight - h - pad, y))) + 'px';
+  }
+  function render() { if (!cur) return; pop.style.setProperty('--team', color(cur.lead)); pop.innerHTML = rowsHtml(cur.lead, cur.members); place(); }
+  function open(b, keyboard, pinned) {
+    clearTimeout(hideT);
+    if (cur && cur.anchor !== b.anchor) cur.anchor.setAttribute('aria-expanded', 'false');
+    cur = Object.assign({}, b, { pinned: !!pinned || !!(cur && cur.key === b.key && cur.pinned) });
+    b.anchor.setAttribute('aria-expanded', 'true');
+    render(); pop.classList.add('show');
+    if (keyboard) { const f = pop.querySelector('button'); if (f) f.focus(); }
+  }
+  function close() {
+    clearTimeout(hideT); if (!cur) return;
+    const a = cur.anchor; cur = null; pop.classList.remove('show'); a.setAttribute('aria-expanded', 'false');
+    if (pop.contains(document.activeElement)) { returning = true; a.focus(); returning = false; }
+  }
+  const hoverOut = () => { if (cur && !cur.pinned) { clearTimeout(hideT); hideT = setTimeout(close, 220); } };
+  pop.addEventListener('mouseenter', () => clearTimeout(hideT));
+  pop.addEventListener('mouseleave', hoverOut);
+  pop.addEventListener('click', e => { const c = e.target.closest('[data-call]'); if (!c || !cur) return; const a = [cur.lead].concat(cur.members).find(x => x.id === c.dataset.call); call(c.dataset.call, a && a.name); close(); });
+  pop.addEventListener('keydown', e => {
+    const bs = [...pop.querySelectorAll('button')], k = bs.indexOf(document.activeElement);
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (bs.length) bs[(k + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length].focus(); }
+    else if (e.key === 'Tab' && ((!e.shiftKey && k === bs.length - 1) || (e.shiftKey && k <= 0))) { e.preventDefault(); close(); }
+  });
+  document.addEventListener('pointerdown', e => { if (cur && !pop.contains(e.target) && !cur.anchor.contains(e.target)) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && cur) { const a = cur.anchor, on = document.activeElement === a; close(); if (on) { returning = true; a.focus(); returning = false; } } });
+  addEventListener('resize', () => cur && place());
+  document.addEventListener('scroll', () => cur && place(), true);
+
+  /* make anchor the lead's handle. key names the lead in its list, so a list that redraws
+     keeps an open popover on the new element */
+  function bind(anchor, key, lead, members, side) {
+    const b = { anchor, key, lead, members, side };
+    anchor.tabIndex = 0; anchor.setAttribute('role', 'button'); anchor.setAttribute('aria-haspopup', 'dialog');
+    anchor.setAttribute('aria-expanded', String(!!(cur && cur.key === key)));
+    anchor.setAttribute('aria-label', label(lead) + ': ' + members.length + ' agents');
+    anchor.style.setProperty('--team', color(lead));
+    anchor.addEventListener('mouseenter', () => { if (!(cur && cur.key === key)) open(b); else clearTimeout(hideT); });
+    anchor.addEventListener('mouseleave', hoverOut);
+    anchor.addEventListener('focus', () => { if (!returning && !(cur && cur.key === key)) open(b); });
+    anchor.addEventListener('blur', () => setTimeout(() => { if (cur && cur.key === key && !cur.pinned && !pop.contains(document.activeElement)) close(); }, 0));
+    anchor.addEventListener('click', e => { if (e.target.closest('.role-card-btn')) return; if (cur && cur.key === key && cur.pinned) close(); else open(b, false, true); });
+    anchor.addEventListener('keydown', e => { if (e.target !== anchor) return; if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') { e.preventDefault(); open(b, true, true); } });
+    if (cur && cur.key === key) { cur.anchor = anchor; cur.lead = lead; cur.members = members; render(); }
+  }
+  function call(id, name) { try { window.parent.postMessage({ type: 'rubric-console:call-agent', id, name }, '*'); } catch {} }
+  function setStatus(list) { for (const a of list || []) status[a.id] = a; if (cur) render(); }
+  return { group, label, color, bind, setStatus, working };
+})();
+
 // ==================== SCAFFOLD ====================
 (function() {
   function esc(text) {
@@ -642,7 +777,9 @@ window.__onTabShow = {};
       panel.style.display = 'none';
     } else {
       panel.innerHTML = '';
+      const G = window.__teams.group(agents);   // a team shows as its lead (AGENT TEAMS above)
       agents.forEach((a, i) => {
+        if (!G.top.includes(a)) return;
         const icon = ICON_LIBRARY[a.icon] || ICON_LIBRARY['Robo'];
         const color = a.color || PALETTE[i % PALETTE.length];
         const row = document.createElement('div');
@@ -652,10 +789,11 @@ window.__onTabShow = {};
           '<canvas class="agent-icon"></canvas>' +
           '<div class="agent-dot idle"></div>' +
           '<div class="agent-info">' +
-            '<span class="agent-name">' + esc(a.name || a.id) + '</span>' +
-            '<span class="agent-task">Idle</span>' +
-          '</div>';
+            '<span class="agent-name">' + esc(G.members[a.id] ? window.__teams.label(a) : (a.name || a.id)) + '</span>' +
+            '<span class="agent-task">' + (G.members[a.id] ? G.members[a.id].length + ' agents' : 'Idle') + '</span>' +
+          '</div>' + (G.members[a.id] ? '<span class="rt-count"></span>' : '');
         panel.appendChild(row);
+        if (G.members[a.id]) { row.classList.add('team-lead'); row.dataset.members = G.members[a.id].map(m => m.id).join(' '); window.__teams.bind(row, 'side:' + a.id, a, G.members[a.id], 'right'); }
         const canvas = row.querySelector('canvas');
         const pixels = a.pixels || icon.p;
         drawIcon(canvas, pixels, color);
@@ -678,9 +816,10 @@ window.__onTabShow = {};
       const resp = await fetch('/api/agent-status', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
       if (!resp.ok) return;
       const data = await resp.json();
+      window.__teams.setStatus(data.agents);
       for (const agent of data.agents) {
         const row = document.querySelector('.agent-row[data-agent="' + agent.id + '"]');
-        if (!row) continue;
+        if (!row || row.classList.contains('team-lead')) continue;
         const dot = row.querySelector('.agent-dot');
         const task = row.querySelector('.agent-task');
         dot.className = 'agent-dot ' + agent.status;
@@ -693,6 +832,15 @@ window.__onTabShow = {};
           task.textContent = 'Idle';
         }
       }
+      // a lead's row: the team's activity, with a count of those working
+      document.querySelectorAll('.agent-row.team-lead').forEach(row => {
+        const ids = [row.dataset.agent].concat((row.dataset.members || '').split(' ').filter(Boolean));
+        const w = window.__teams.working(ids), n = ids.length - 1;
+        const st = ids.map(id => (data.agents.find(x => x.id === id) || {}).status);
+        row.querySelector('.agent-dot').className = 'agent-dot ' + (w ? 'active' : st.includes('recent') ? 'recent' : 'idle');
+        row.querySelector('.agent-task').textContent = n + ' agents' + (w ? ' \u00b7 ' + w + ' working' : '');
+        row.querySelector('.rt-count').textContent = w ? String(w) : '';
+      });
     } catch {}
   }
 
@@ -951,7 +1099,15 @@ window.__onTabShow = {};
   function esc(text) { const d = document.createElement('div'); d.textContent = text == null ? '' : text; return d.innerHTML; }
 
   function renderAgentsGrid(agentStatuses) {
-    grid.innerHTML = AGENT_DEFS.map((a, idx) => {
+    const G = window.__teams.group(AGENT_DEFS);   // a team shows as its lead (AGENT TEAMS)
+    if (agentStatuses) window.__teams.setStatus(agentStatuses);
+    grid.innerHTML = G.top.map((a, idx) => {
+      const team = G.members[a.id];
+      if (team) {
+        const w = window.__teams.working([a.id].concat(team.map(m => m.id)));
+        a = Object.assign({}, a, { name: window.__teams.label(a), role: team.length + ' agents' + (w ? ' \u00b7 ' + w + ' working' : '') });
+        if (w) agentStatuses = (agentStatuses || []).filter(x => x.id !== a.id).concat([{ id: a.id, status: 'active', lastTask: w + ' working' }]);
+      }
       const s = agentStatuses ? agentStatuses.find(x => x.id === a.id) : null;
       const status = s ? s.status : 'idle';
       const task = s ? s.lastTask : 'Idle';
@@ -961,7 +1117,7 @@ window.__onTabShow = {};
       const glowColor = status === 'active' ? a.color : status === 'waiting' ? '#e35050' : 'transparent';
       const pixels = a.pixels || [];
       const iconHtml = status === 'active' ? makeHopSvg(pixels, a.color, idx) : makeStaticSvg(pixels, a.color);
-      return '<div class="agent-card-big status-' + status + '" data-agent="' + esc(a.id) + '">' +
+      return '<div class="agent-card-big status-' + status + (team ? ' team-lead' : '') + '" data-agent="' + esc(a.id) + '">' +
         '<div class="agent-card-glow" style="background:radial-gradient(circle at 50% 40%, ' + glowColor + '08 0%, transparent 70%);"></div>' +
         '<div class="agent-card-icon-wrap">' + iconHtml + '</div>' +
         '<span class="agent-card-name">' + esc(a.name) + '</span>' +
@@ -969,6 +1125,10 @@ window.__onTabShow = {};
         '<div class="agent-card-status"><span class="agent-card-dot ' + status + '"></span><span>' + statusLabel + '</span></div>' +
         '<span class="agent-card-task">' + esc(task || '') + '</span></div>';
     }).join('');
+    grid.querySelectorAll('.agent-card-big.team-lead').forEach(el => {
+      const lead = AGENT_DEFS.find(x => x.id === el.dataset.agent);
+      window.__teams.bind(el, 'grid:' + lead.id, lead, G.members[lead.id]);
+    });
   }
 
   async function agentsInit() {
@@ -1877,10 +2037,17 @@ window.__onTabShow = {};
 
   function renderAgents(agents) {
     const grid = document.getElementById('team-grid');
-    grid.innerHTML = agents.map(agent => {
+    const G = window.__teams.group(agents);   // a team shows as its lead (AGENT TEAMS)
+    grid.innerHTML = G.top.map(agent => {
+      const team = G.members[agent.id];
+      if (team) agent = Object.assign({}, agent, { name: window.__teams.label(agent) });
       const skillChips = (agent.skills || []).map(s => '<span class="skill-chip">' + esc(s) + '</span>').join('');
-      return '<div class="team-agent-card"><div class="agent-card-header"><div class="team-agent-icon" style="border-color: ' + (agent.color || '#333') + ';">' + defaultIcon + '</div><div><div class="agent-card-name-team">' + esc(agent.name) + '</div><div class="agent-card-role-team">' + esc(agent.role) + '</div></div></div><p class="agent-card-desc">' + esc(agent.description) + '</p><div class="agent-skills-row">' + skillChips + '</div><button class="role-card-btn" onclick="toggleSkills(\'' + agent.id + '\')">Skills</button><div class="skills-expand" id="skills-' + agent.id + '" style="display:none"><div class="skills-grid" id="skills-grid-' + agent.id + '"></div></div></div>';
+      return '<div class="team-agent-card' + (team ? ' team-lead' : '') + '" data-agent="' + esc(agent.id) + '"><div class="agent-card-header"><div class="team-agent-icon" style="border-color: ' + (agent.color || '#333') + ';">' + defaultIcon + '</div><div><div class="agent-card-name-team">' + esc(agent.name) + '</div><div class="agent-card-role-team">' + esc(agent.role) + '</div></div></div><p class="agent-card-desc">' + esc(agent.description) + '</p>' + (team ? '<p class="rt-members">' + team.length + ' agents: ' + esc(team.map(m => m.name.replace(/^(Blueprint|Alpha Carrier) /, '')).join(', ')) + '</p>' : '') + '<div class="agent-skills-row">' + skillChips + '</div><button class="role-card-btn" onclick="toggleSkills(\'' + agent.id + '\')">Skills</button><div class="skills-expand" id="skills-' + agent.id + '" style="display:none"><div class="skills-grid" id="skills-grid-' + agent.id + '"></div></div></div>';
     }).join('');
+    grid.querySelectorAll('.team-agent-card.team-lead').forEach(el => {
+      const lead = agents.find(x => x.id === el.dataset.agent);
+      window.__teams.bind(el, 'team:' + lead.id, lead, G.members[lead.id]);
+    });
   }
 
   async function teamInit() {

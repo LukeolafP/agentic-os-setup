@@ -37,7 +37,8 @@ if [ -n "$note" ]; then
   echo "Update that note during this turn, per Memory/Automations/Chat Logging.md."
 else
   echo "chat note: none yet for this session"
-  echo "Create it before other work, per Memory/Automations/Chat Logging.md. Its"
+  echo "Read Memory/Automations/Chat Logging.md once now (it is not preloaded), then create"
+  echo "the note before other work, per that automation. Its"
   echo "frontmatter must carry: session: $sid"
 fi
 # Petra's voice sessions (the JARVIS bridge sets GTD_VOICE=1): Luke is waiting in silence,

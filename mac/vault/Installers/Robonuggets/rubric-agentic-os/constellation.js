@@ -11,6 +11,10 @@
    Click Petra to talk. Click an agent (on the ring or in flight) to open the Second
    Brain on that agent and every file its copies have read or changed.
 
+   Teams (29 Oct 2026): an agent team shows as its lead alone on the ring (agent-teams.js),
+   in the team's brand colour with a small count of the members working; hovering it,
+   tapping it or tabbing to it opens the team's members. A member's copies fly from the lead.
+
    Data: 'gtd-activity' snapshots from the bridge, forwarded by jarvis.js.
    Geometry: the dashboard's orbCX / orbCY / RINGpx, so moving or resizing the ring
    in edit mode moves this with it.
@@ -60,15 +64,22 @@
   });
 
   const geo = () => ({ x: orbCX(), y: orbCY(), R: RINGpx() });
+  const T = () => window.osTeams;
+  /* the agents with a place on the ring: everyone except members folded into their lead */
+  const ringAgents = () => T() ? data.agents.filter(a => !T().isFolded(a.id)) : data.agents;
+  const isLead = id => !!(T() && T().isLead(id));
   const deptIndex = d => { const i = DEPTS.findIndex(x => x.key.toLowerCase() === String(d || '').toLowerCase()); return i < 0 ? 5 : i; };
   const SPAN = Math.PI * 2 / DEPTS.length;
   const deptStart = i => -Math.PI / 2 - SPAN / 2 + i * SPAN;
 
   function homeOf(agentId) {
-    const a = data.agents.find(x => x.id === agentId);
+    const lead = T() && T().leadOf(agentId);
+    if (lead) return homeOf(lead);                  // a team member lives in its lead
+    const ring = ringAgents();
+    const a = ring.find(x => x.id === agentId);
     if (!a) return null;
     const di = deptIndex(a.department);
-    const same = data.agents.filter(x => deptIndex(x.department) === di);
+    const same = ring.filter(x => deptIndex(x.department) === di);
     const k = same.indexOf(a);
     const ang = deptStart(di) + SPAN * (k + 1) / (same.length + 1);
     const { x, y, R } = geo();
@@ -175,23 +186,83 @@
     });
     ctx.restore();
     // the agents themselves, at home on the ring
-    for (const a of data.agents) {
+    for (const a of ringAgents()) {
       const h = homeOf(a.id); if (!h) continue;
-      const busy = data.instances.some(i => i.agent === a.id && (i.status === 'running' || i.status === 'queued'));
-      const hot = hover && hover.kind === 'agent' && hover.id === a.id;
+      const lead = isLead(a.id);
+      const col = lead ? T().color(a) : a.color;
+      const act = lead ? T().activity(a.id, data.instances) : null;
+      const busy = lead ? act.working + act.queued > 0 : data.instances.some(i => i.agent === a.id && (i.status === 'running' || i.status === 'queued'));
+      const hot = (hover && hover.kind === 'agent' && hover.id === a.id) || (lead && T().popOpen() === a.id);
       ctx.save();
-      if (busy) { ctx.globalAlpha = .35 + .25 * Math.sin(t * 4); ctx.beginPath(); ctx.arc(h.x, h.y, 15, 0, 7); ctx.strokeStyle = a.color; ctx.lineWidth = 2; ctx.stroke(); }
+      if (busy) { ctx.globalAlpha = .35 + .25 * Math.sin(t * 4); ctx.beginPath(); ctx.arc(h.x, h.y, lead ? 18 : 15, 0, 7); ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.stroke(); }
       ctx.globalAlpha = 1;
+      // a lead carries its team: a second hairline ring round the node
+      if (lead) { ctx.beginPath(); ctx.arc(h.x, h.y, hot ? 14.5 : 12.5, 0, 7); ctx.strokeStyle = col; ctx.globalAlpha = .45; ctx.lineWidth = 1; ctx.stroke(); ctx.globalAlpha = 1; }
       ctx.beginPath(); ctx.arc(h.x, h.y, hot ? 11 : 9, 0, 7);
       ctx.fillStyle = '#0F1C45'; ctx.fill();
-      ctx.strokeStyle = a.color; ctx.lineWidth = 2; ctx.stroke();
-      ctx.beginPath(); ctx.arc(h.x, h.y, 3.5, 0, 7); ctx.fillStyle = a.color; ctx.fill();
+      ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.stroke();
+      ctx.beginPath(); ctx.arc(h.x, h.y, 3.5, 0, 7); ctx.fillStyle = col; ctx.fill();
       ctx.font = '600 10px "Proxima Nova", sans-serif'; ctx.fillStyle = '#F5F8FF'; ctx.globalAlpha = .85;
       ctx.textAlign = 'center'; ctx.textBaseline = 'top';
       const ox = Math.cos(h.ang) * 20, oy = Math.sin(h.ang) * 20;
-      ctx.fillText(a.name, h.x + ox, h.y + oy + (Math.sin(h.ang) > 0 ? 2 : -12));
+      ctx.fillText(lead ? T().display(a) : a.name, h.x + ox, h.y + oy + (Math.sin(h.ang) > 0 ? 2 : -12));
+      // members working: a small count on the lead's shoulder
+      if (lead && act.working) {
+        ctx.globalAlpha = 1;
+        ctx.beginPath(); ctx.arc(h.x + 10, h.y - 10, 7, 0, 7); ctx.fillStyle = col; ctx.fill();
+        ctx.lineWidth = 1.5; ctx.strokeStyle = '#0F1C45'; ctx.stroke();
+        ctx.font = '700 9px "Proxima Nova", sans-serif'; ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle';
+        ctx.fillText(String(act.working), h.x + 10, h.y - 9.5);
+      }
       ctx.restore();
     }
+    placeKeys();
+  }
+
+  /* keyboard: one invisible button per lead over its node, so Tab reaches the team */
+  const keys = new Map();
+  function placeKeys() {
+    const leads = ringAgents().filter(a => isLead(a.id));
+    const want = new Set(leads.map(a => a.id));
+    for (const [id, b] of keys) if (!want.has(id)) { b.remove(); keys.delete(id); }
+    for (const a of leads) {
+      let b = keys.get(a.id);
+      if (!b) {
+        b = document.createElement('button');
+        b.className = 'agTeamKey'; b.dataset.id = a.id;
+        b.setAttribute('aria-haspopup', 'dialog');
+        b.addEventListener('focus', () => { if (!blocked() && !T().returning()) openTeam(a.id, b, { returnFocus: b, anchor: b }); });
+        b.addEventListener('blur', () => setTimeout(() => { const p = document.getElementById('agTeamPop'); if (!p || !p.contains(document.activeElement)) T().closePop(); }, 0));
+        b.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') { e.preventDefault(); openTeam(a.id, b, { returnFocus: b, anchor: b, keyboard: true, pinned: true }); }
+        });
+        document.body.appendChild(b); keys.set(a.id, b);
+      }
+      const h = homeOf(a.id);
+      if (h) { b.style.left = h.x + 'px'; b.style.top = h.y + 'px'; }
+      b.setAttribute('aria-label', `${T().display(a)}: ${T().members(a.id).length} agents. Enter to list them`);
+      b.setAttribute('aria-expanded', String(T().popOpen() === a.id));
+      b.tabIndex = blocked() ? -1 : 0;
+    }
+  }
+  function nodeRect(id) {
+    const h = homeOf(id); if (!h) return null;
+    return { left: h.x - 14, top: h.y - 14, width: 28, height: 28 };
+  }
+  function openTeam(id, anchorEl, opts) {
+    const r = nodeRect(id); if (!r) return;
+    tip.classList.remove('show');
+    T().openPop(id, r, { onOpen: m => clickAgent(m.id), ...opts });
+  }
+  /* what a click on an agent does, from the ring or from its team's popover */
+  function clickAgent(id) {
+    if (window.osChat && window.osChat.isOpen()) {
+      const live = data.instances.filter(i => i.agent === id).sort((x, y) => ((y.status === 'running') - (x.status === 'running')) || (y.created - x.created))[0];
+      if (live) return window.osChat.openSub(live.iid);
+      if (window.osBrainFloat) window.osBrainFloat(id);
+      return;
+    }
+    openFocus(id);
   }
 
   function drawCall(p, v, inst, t) {
@@ -297,7 +368,7 @@
       const v = vis.get(inst.iid); if (!v || v.a < .3) continue;
       if (Math.hypot(px - v.x, py - v.y) < 20) return { kind: 'copy', agent: inst.agent, inst };
     }
-    for (const a of data.agents) {
+    for (const a of ringAgents()) {
       const h = homeOf(a.id);
       if (h && Math.hypot(px - h.x, py - h.y) < 16) return { kind: 'agent', id: a.id, agent: a };
     }
@@ -308,6 +379,13 @@
     if (blocked()) { hover = null; tip.classList.remove('show'); cv.style.cursor = ''; return; }
     hover = hitTest(e.clientX, e.clientY);
     cv.style.cursor = hover ? 'pointer' : '';
+    // a team lead: its members in the popover instead of the tip
+    if (hover && hover.kind === 'agent' && isLead(hover.id)) {
+      if (e.pointerType === 'mouse' && T().popOpen() !== hover.id) openTeam(hover.id);
+      else T().hoverIn();
+      return;
+    }
+    if (T() && T().popOpen() && e.pointerType === 'mouse') T().hoverOut();
     if (!hover) { tip.classList.remove('show'); return; }
     let html = '';
     if (hover.kind === 'petra') html = '<b>Petra</b><span>The main agent. Click to talk.</span>';
@@ -325,7 +403,7 @@
     tip.style.left = (e.clientX + 14) + 'px'; tip.style.top = (e.clientY + 14) + 'px';
     tip.classList.add('show');
   });
-  cv.addEventListener('pointerleave', () => { hover = null; tip.classList.remove('show'); });
+  cv.addEventListener('pointerleave', e => { hover = null; tip.classList.remove('show'); if (T() && e.pointerType === 'mouse') T().hoverOut(); });
   cv.addEventListener('pointerdown', e => {
     if (blocked()) return;
     const h = hitTest(e.clientX, e.clientY);
@@ -333,6 +411,12 @@
     e.stopPropagation(); e.preventDefault();
     tip.classList.remove('show');
     if (h.kind === 'petra') { petraClick(); return; }
+    // a team lead on touch: the first tap shows the team; a mouse click opens the lead
+    if (h.kind === 'agent' && isLead(h.id) && e.pointerType !== 'mouse') {
+      if (T().popOpen() === h.id) T().closePop(); else openTeam(h.id, null, { pinned: true });
+      return;
+    }
+    T() && T().closePop();
     // chat open: a working copy opens its own chat beside a floating Second Brain
     if (window.osChat && window.osChat.isOpen()) {
       if (h.kind === 'copy') window.osChat.openSub(h.inst.iid);

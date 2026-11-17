@@ -1,39 +1,10 @@
 #!/bin/bash
-# Session start load. Deliberately small: automations in full, plus the chat index.
-# Nothing else from the vault is loaded. Everything else is read on demand, grep first,
-# then 00 Master Index.md. See the "What loads every session" section of CLAUDE.md.
-
-VAULT="__VAULT__"
-shopt -s nullglob
-
-found=0
-for f in "$VAULT"/Memory/Automations/*.md; do
-  found=1
-  echo "=== ACTIVE AUTOMATION: $f ==="
-  cat "$f"
-  echo
+# Session start load. The logic is in session-load.js, shared with Windows (session-load.ps1).
+# Slimmed 16 Nov 2026: a trigger list for the automations and the newest chats, under ~9,000
+# characters. Previous versions: session-load.before-slim-2026-11-16.sh, session-load.before-node-2026-11-17.sh.
+DIR="$(cd "$(dirname "$0")" && pwd)"
+for n in node /opt/homebrew/bin/node /usr/local/bin/node; do
+  if command -v "$n" >/dev/null 2>&1; then exec "$n" "$DIR/session-load.js"; fi
 done
-[ $found -eq 1 ] && echo "Follow the triggers and actions in the automation notes above without being asked."
-
-idx="$VAULT/Memory/Chats/00 Chat Index.md"
-if [ -f "$idx" ]; then
-  echo
-  echo "=== CHAT INDEX: every past chat, one line each ==="
-  cat "$idx"
-  echo
-fi
-
-# Brand Asset Feedback: brand-agent files changed since an agent made them. Prints nothing when all match.
-if command -v node >/dev/null 2>&1 && [ -f "$VAULT/Brand/tools/brand-sync.mjs" ]; then
-  changed=$(node "$VAULT/Brand/tools/brand-sync.mjs" check --quiet 2>/dev/null)
-  if [ -n "$changed" ]; then
-    echo
-    echo "=== $changed"
-    echo
-  fi
-fi
-
-echo
-echo "That is the whole session load. Do not scan, list or read the rest of the vault."
-echo "To find something: grep first, then $VAULT/00 Master Index.md, then follow it down."
+echo "=== session-load: node not found, so the automation list could not load. Read Memory/Automations/ notes when their trigger fires. ==="
 true

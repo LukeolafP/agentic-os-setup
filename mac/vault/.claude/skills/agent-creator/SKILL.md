@@ -55,6 +55,9 @@ label: <Display Name>
 description: <one or two sentences: what it does and when to send work to it. Petra reads this to choose the agent.>
 department: <Brand | Content | Scripting | Memory | GTD | Luke>
 role: <short role line for the Team tab, e.g. "Scripting · drafts reels">
+team: <optional: the team's slug, e.g. blueprint; leave the line out for a solo agent>
+team_role: <only with team: lead | member>
+lead: <only on a member: the id of its team's lead, e.g. bp-creative-director>
 model: <claude-opus-5-5 | claude-sonnet-5>
 effort: <low | medium | high>
 ui_color: "<hex colour in quotes (YAML reads an unquoted # as a comment), the department's: Brand #ff3d71, Content #2196f3, Scripting #fdd835, Memory #e040fb, GTD #00c853, Luke #ff9100>"
@@ -93,6 +96,31 @@ Petra. Lead with one sentence saying what you did, then list every note you crea
 changed as a vault path, then anything left open.
 ```
 
+### Teams (optional)
+
+Agents can work as a team: one lead that takes the brief, splits it and calls its members as
+subagents through the Agent tool (`subagent_type` = the member's id), then one report. The OS
+ring, the chat strip and the Rubric console group a team under its lead from three frontmatter
+fields; `role:` stays the Team-tab line and is never used for this.
+
+- **Solo agent:** leave out `team`, `team_role` and `lead`.
+- **Join an existing team:** `team: <slug>`, `team_role: member`, `lead: <lead id>`, copying the
+  slug and lead from a current member (the teams so far are `blueprint`, led by
+  `bp-creative-director`, and `alpha-carrier`, led by `ac-creative-director`). Then add the new
+  member to the lead's team list in its body, and add the member's permissions to the lead's
+  `permissions`: members called as subagents run under the lead's job, so the lead's list must be
+  the whole team's. Register both.
+- **New team lead:** `team: <new slug>`, `team_role: lead`, no `lead:`. Its body names every member
+  by id, says it plans, briefs, calls them through the Agent tool and checks their work, and that
+  when the Agent tool is missing (it was itself called as a subagent) it returns the member briefs
+  instead. Its `permissions` are the union of its members'.
+- A member can still be queued on its own.
+
+Queued jobs run with `--permission-mode acceptEdits` and only the listed permissions, so a Bash
+rule must match the command as typed: list a script both bare and quoted
+(`Bash(node tools/x.mjs:*)`, `Bash(node "tools/x.mjs":*)`), and tell the agent to run commands
+from the vault root without loops, `$variables` or shell scripts, which the queue cannot approve.
+
 ### Where each department starts
 
 | Department | Start from |
@@ -112,7 +140,8 @@ sidebar, the Agents tab and the Team tab. If it reports an error, fix the file a
 it again. The OS and JARVIS read the folder directly.
 
 Then add the agent's row to [[00 Agents Index]] in the same turn: `| [[<id>\|<Label>]] |
-<Department> | <one line on what it does> |`, keeping the table sorted by id.
+<Department> | <one line on what it does> |`, keeping the table sorted by id. Register a
+team's lead again whenever a member is added.
 
 ## 5. Report
 

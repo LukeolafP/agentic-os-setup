@@ -49,6 +49,19 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "mcp__claude-in-chrome__.*|Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"__VAULT__/.claude/hooks/media-guard.js\"",
+            "timeout": 5
+          }
+        ]
+      }
     ]
-  }
+  },
+  "autoCompactWindow": 200000
 }

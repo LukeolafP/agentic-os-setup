@@ -38,6 +38,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import * as gtd from './gtd.mjs'
 import { createLocks } from './locks.mjs'
+import { computerServer } from './computer.mjs'
 
 const MAX_RUNNING = Number(process.env.GTD_MANAGERS_MAX || 4)
 const ASK_TIMEOUT_MS = 15 * 60 * 1000
@@ -57,7 +58,7 @@ export const setHooks = (h) => { hooks = { ...hooks, ...h } }
 
 const running = () => [...managers.values()].filter((m) => m.status === 'working' || m.status === 'waiting').length
 const clip = (v, n) => { const t = String(v ?? ''); return t.length > n ? t.slice(0, n) + '…' : t }
-const pub = (m) => ({ id: m.id, title: m.title, status: m.status, brief: m.brief, created: m.created, started: m.started, ended: m.ended,
+const pub = (m) => ({ id: m.id, title: m.title, kind: m.clicky ? 'screen' : 'manager', status: m.status, brief: m.brief, created: m.created, started: m.started, ended: m.ended,
   updates: m.updates.slice(-5), result: m.result ? clip(m.result, 4000) : null })
 export const listManagers = () => [...managers.values()].map(pub)
 
@@ -111,6 +112,11 @@ working at the same time on related pieces; you all coordinate through Petra.
   mcp__team__ask_petra. It waits for the answer. Use it sparingly.
 - To tell another manager something directly, mcp__team__message_manager (Petra sees it).
   Call mcp__team__check_messages between big steps; Petra may have passed something on.
+- Pictures stay out of your session, because each one is re-read on every later step. Do all
+  Chrome work through the Agent tool with subagent_type "chrome-operator": one call per page,
+  form or setting, carrying the tab id and progress forward from each text report. Claude in
+  Chrome tools are blocked in your own session. To look at photos or renders you did not
+  make, send "image-viewer" the paths and your question.
 - You have all of Claude Code: tools, skills, subagents, the vault and Luke's MCP servers.
   The vault's CLAUDE.md rules apply, except Chat Logging: Petra keeps the chat note, never
   you.
@@ -138,11 +144,45 @@ claimed, is blocked.
    ("merged hero drawn word into blueprint.html"). It goes to Petra and the team board and
    lets the next manager in.
 - While you hold a claim you cannot queue for more: release, then claim everything at once.
-- A claim is released when you go ${Math.round(CLAIM_IDLE_MS / 60000)} minutes without a tool call, when your turn ends,
-  and if you fail or are stopped. Subagents you start share your claims and the same block.
+- A claim is released when you go ${Math.round(CLAIM_IDLE_MS / 60000)} minutes without a tool call, when your turn ends
+  with no background helpers still running, and if you fail or are stopped. Subagents you start share your claims and the same block.
 - If a write is blocked, do not work around it with another tool, a copy and move, or a
   script: claim the file and wait.
 `
+
+/* ---------- screen agents (GTD, 7 Nov 2026) ----------
+   A screen agent is a manager that works on Luke's screen: it sees the Mac and moves the
+   Agentic OS pointer and the real mouse and keyboard through the computer tools (computer.mjs,
+   whose hands are the Agentic OS program). Petra or any manager starts one with
+   start_screen_agent. Only one works at a time, because there is one mouse; the next waits in
+   the queue. It shows on the OS like a manager, in cyan. */
+const CLICKY_RULES = (m) => `
+# You are a screen agent
+
+You do your brief on Luke's Mac the way a person would, with the computer tools
+(mcp__computer__screenshot, click, type_text, press_keys, scroll, drag, move_mouse, open_app,
+wait, done_with_computer). The Agentic OS pointer flies to every place you click, with the label
+you give, so Luke can watch; give every click and drag a short label ("Upload button").
+
+- Start with mcp__computer__use_app for the app the job is in: its window gets an outline Luke
+  can see, and from then on read_window, press_control, set_text, send_keys and type_quiet work
+  inside it without his mouse, so he can keep working. Read the window first (it lists the
+  controls with numbers), act one step at a time, and read or screenshot again to check before
+  the next step. Use the mouse tools (click, drag) only for what the quiet tools cannot do, such
+  as dragging onto a canvas, and say in a post_update when you take the mouse. If something did
+  not happen, look again and adjust.
+- Prepare first with your other tools when that is faster and surer: download files, rename
+  them, put them in one folder with Bash or the Google Drive connector, then do only the
+  on-screen part with the mouse (for example: open the upload dialog, go to the folder with
+  cmd+shift+g, select all, open).
+- Never type a password, pay, send, post, publish or delete anything unless the brief says Luke
+  asked for exactly that.
+- If Luke presses Esc you are stopped: stop, and report what you had done and what is left.
+- When finished, call mcp__computer__done_with_computer, then finish with a report Petra can say
+  out loud: one sentence on what is now on screen, then anything left open.
+`
+const CLICKY_COLOR = '#00E5FF'
+const clickyBusy = () => [...managers.values()].some((m) => m.clicky && (m.status === 'working' || m.status === 'waiting'))
 
 function cleanEnv() {
   const env = { ...process.env, GTD_JOB: '1', RUBRIC_AGENT_ID: 'gtd-vault' }   // GTD_JOB keeps the chat-log hook quiet
@@ -151,19 +191,38 @@ function cleanEnv() {
      ("sdk_default_off") unless this is set, so Petra and her managers can publish
      claude.ai artifacts like the plain CLI does */
   env.CLAUDE_CODE_ARTIFACT = '1'
+  /* GTD (26 Oct 2026): load the Claude in Chrome browser tools in SDK sessions, like `claude --chrome` */
+  env.CLAUDE_CODE_ENABLE_CFC = '1'
   return env
 }
 
 const ok = (text) => ({ content: [{ type: 'text', text: String(text) }] })
+const CLICKY_TOOL = 'Send a screen agent to do something on Luke\'s screen, the way a person at the Mac would: it sees the screen and moves the mouse and keyboard in any app, and Luke watches the Agentic OS pointer fly to each click. Use it for work that only the screen can do (put images into a FigJam or Figma board, click through a desktop app, fill in a form in an app with no connector). Prepare files first where you can (download, rename, gather in one folder) and say where they are in the brief. Only one screen agent works at a time; others wait their turn.'
+const clickyArgs = {
+  title: z.string().min(2).describe('A short name Luke will see, like "Mood photos into FigJam".'),
+  brief: z.string().min(10).describe('Exactly what should end up on screen, which app and window, where the files are, and anything it must not do.'),
+}
 
 /** the tools each manager gets: the team board, Petra, and each other */
 function teamServer(selfId) {
+  const self = managers.get(selfId)
   return createSdkMcpServer({
     name: 'team', version: '1.0.0',
     tools: [
+      ...(self?.clicky ? [] : [tool('start_screen_agent', CLICKY_TOOL, clickyArgs, async ({ title, brief }) => {
+        const r = startManager(title, brief, null, self?.tab || null, { clicky: true, by: selfId })
+        hooks.notify({ kind: 'update', id: selfId, title: self?.title || selfId, text: `Sent a screen agent (${r.id}): ${title}` })
+        return ok(`Started screen agent ${r.id} "${title}"${r.position ? `, queued (${r.position} waiting)` : ''}. Its report comes to Petra; check it with team_board.`)
+      })]),
       tool('team_board', 'Every manager Petra is running: title, status, brief and latest updates. Read it before planning so your work fits the others.', {}, async () => {
         const list = listManagers()
-        return ok((list.map((x) => `${x.id === selfId ? '(you) ' : ''}${x.id} · ${x.title} · ${x.status}\n  brief: ${clip(x.brief, 500)}${x.updates.length ? '\n  updates:\n' + x.updates.map((u) => `   - ${clip(u.text, 400)}`).join('\n') : ''}${x.result ? '\n  finished: ' + clip(x.result, 600) : ''}`).join('\n\n') || 'No managers.') + '\n\n' + locks.describe())
+        /* GTD 16 Nov 2026 (Token Burn Audit): finished managers stay on the board until a new
+           chat, and each printed its brief, five updates and report, so every call grew with
+           the day's work (15,000 characters on average). Finished ones are now one line. */
+        const ended = (x) => x.status === 'done' || x.status === 'failed' || x.status === 'stopped'
+        return ok((list.map((x) => ended(x) && x.id !== selfId
+          ? `${x.id} · ${x.title} · ${x.status}${x.result ? ': ' + clip(String(x.result).replace(/\s+/g, ' '), 200) : ''}`
+          : `${x.id === selfId ? '(you) ' : ''}${x.id} · ${x.title} · ${x.status}\n  brief: ${clip(x.brief, 500)}${x.updates.length ? '\n  updates:\n' + x.updates.map((u) => `   - ${clip(u.text, 400)}`).join('\n') : ''}${x.result ? '\n  finished: ' + clip(x.result, 600) : ''}`).join('\n\n') || 'No managers.') + '\n\n' + locks.describe())
       }),
       tool('claim_file', 'Claim files before you change them: an official file, several files that change together (a page and its css), or a folder. Waits in a queue until they are free (up to 15 minutes), granted all at once. Draft first in your own .work/<your id>/ folder; claim only when ready to merge.', {
         path: z.union([z.string(), z.array(z.string()).min(1)]).describe('A vault path, or a list of them claimed together. Absolute or relative to the vault.'),
@@ -242,13 +301,29 @@ function deliver(m, text) {
     }
     m.inbox[m.inbox.length - 1].read = true
     if (m.s.deliver) { const d = m.s.deliver; m.s.deliver = null; d(text) } else m.s.inbox.push(text)
+    return
   }
+  /* GTD 23 Oct 2026: the session closed (45 min idle, or it crashed). Before this, the message sat
+     unread in the inbox and the manager never woke. Now it is queued to resume with the message. */
+  if (m.status === 'stopped') return
+  if (!m.s) { m.brief += '\n\n' + text; m.inbox[m.inbox.length - 1].read = true; return }   // not started yet: add to its brief
+  m.inbox[m.inbox.length - 1].read = true
+  m.wake = m.wake ? m.wake + '\n\n' + text : text
+  m.status = 'queued'; m.ended = null
+  if (!gtd.hasInstance(m.id)) gtd.registerInstance({ iid: m.id, agent: m.id, name: m.title, color: '#7DA0FF', parent: 'petra', label: clip(text, 160), status: 'queued', kind: 'manager' })
+  else gtd.updateInstance(m.id, { status: 'queued', ended: null })
+  pump()
 }
 
 function run(m) {
   m.status = 'working'; m.started = Date.now()
   gtd.updateInstance(m.id, { status: 'running', started: m.started })
-  const s = { inbox: [m.brief], deliver: null, closed: false }
+  /* GTD 23 Oct 2026: a manager woken after its session closed resumes that session (full
+     context) with the waiting message, instead of starting over from the brief */
+  const first = m.wake ? m.wake : m.brief
+  const resume = m.wake && m.session ? m.session : undefined
+  m.wake = null
+  const s = { inbox: [first], deliver: null, closed: false }
   m.s = s
   async function* messages() {
     while (!s.closed) {
@@ -263,46 +338,103 @@ function run(m) {
       cwd: gtd.VAULT,
       pathToClaudeCodeExecutable: gtd.CLAUDE_BIN,
       settingSources: ['user', 'project', 'local'],
-      systemPrompt: { type: 'preset', preset: 'claude_code', append: RULES(m) },
-      mcpServers: { team: teamServer(m.id) },
+      systemPrompt: { type: 'preset', preset: 'claude_code', append: RULES(m) + (m.clicky ? CLICKY_RULES(m) : '') },
+      mcpServers: { team: teamServer(m.id), ...(m.clicky ? { computer: computerServer(`screen agent ${m.id}`) } : {}) },
+      ...(m.clicky ? { allowedTools: ['mcp__computer'] } : {}),
       permissionMode: 'auto',
       canUseTool: (name, input, opts) => hooks.askPermission({ id: m.id, title: m.title }, name, input, opts),
       hooks: { PreToolUse: [{ hooks: [(input) => guard(m, input)] }] },      // file claims, see guard
       env: cleanEnv(),
+      ...(resume ? { resume } : {}),
     },
   })
   m.q = q
+  m.bg = new Map(); m.turn = true; m.ending = null      // a fresh CLI process: no background helpers yet (the level is per process)
   ;(async () => {
     try {
       for await (const msg of q) {
         if (msg.type === 'system' && msg.subtype === 'init') m.session = msg.session_id
+        gtd.trackTask(msg, m.id)
+        if (msg.type === 'system' && msg.subtype === 'background_tasks_changed') {
+          m.bg = new Map((msg.tasks || []).filter((x) => HELPER_TASKS.has(x.task_type)).map((x) => [x.task_id, x.description]))
+          if (!m.turn && m.ending) { if (m.bg.size) waitOnHelpers(m); else { clearTimeout(m.settle); m.settle = setTimeout(() => { if (!m.turn && m.ending && !m.bg.size) finish(m) }, SETTLE_MS) } }
+        }
+        /* the CLI starts a turn by itself when a helper reports back: the manager is working again */
+        if (msg.type === 'assistant' && !msg.parent_tool_use_id && !m.turn) wakeUp(m)
         if (msg.type === 'assistant') for (const b of msg.message?.content || []) {
           if (b.type === 'tool_use') { gtd.trackToolUse(gtd.ownerOf(msg.parent_tool_use_id, m.id), b); gtd.updateInstance(m.id, { last: gtd.toolLabel(b.name) }) }
         }
         if (msg.type === 'user') for (const b of Array.isArray(msg.message?.content) ? msg.message.content : []) if (b?.type === 'tool_result') gtd.trackToolResult(b)
         if (msg.type === 'assistant' || msg.type === 'user') gtd.recordStream(m.id, msg)
         if (msg.type === 'result') {
-          m.result = msg.result || m.result || ''
-          m.status = msg.subtype === 'success' ? 'done' : 'failed'
-          m.ended = Date.now()
-          gtd.updateInstance(m.id, { status: m.status === 'done' ? 'done' : 'failed', ended: m.ended })
-          locks.releaseOwner(m.id, m.status === 'done' ? 'manager finished' : 'manager failed')
-          hooks.notify({ kind: m.status === 'done' ? 'finished' : 'failed', id: m.id, title: m.title, text: clip(m.result || msg.subtype, 6000) })
-          clearTimeout(m.idle)
-          m.idle = setTimeout(() => close(m), IDLE_CLOSE_MS)
-          pump()
+          m.turn = false
+          m.ending = { ok: msg.subtype === 'success', text: msg.result || '', subtype: msg.subtype }
+          if (m.bg.size && m.ending.ok) waitOnHelpers(m)
+          else finish(m)
         }
       }
     } catch (err) {
+      m.ending = null; clearTimeout(m.settle)
       m.status = 'failed'; m.ended = Date.now(); m.result = String(err?.message || err)
       gtd.updateInstance(m.id, { status: 'failed', ended: m.ended })
       locks.releaseOwner(m.id, 'manager failed')
       hooks.notify({ kind: 'failed', id: m.id, title: m.title, text: clip(m.result, 800) })
     }
+    if (m.ending) finish(m)       // the CLI went away while the manager waited on helpers
     s.closed = true
     locks.releaseOwner(m.id, 'manager closed')
     pump()
   })()
+}
+
+/* GTD 5 Nov 2026: a manager often starts background helpers (Agent with run_in_background), ends
+   its turn to wait, and is woken by the CLI when one reports. Before this it showed done at every
+   turn end and vanished from the OS while its helpers were still working. Now it is done only when
+   its turn has ended AND no helper is still running (the SDK's background_tasks_changed level,
+   m.bg). Until then it stays working on the OS with "waiting on N helpers", keeps its file claims
+   (its helpers use them), never idles closed, and Petra gets a one-line update instead of a
+   finished report. Background Bash (a preview server) does not count: it can run for ever. */
+const HELPER_TASKS = new Set(['local_agent', 'local_workflow', 'remote_agent'])
+const SETTLE_MS = 5000       // the last helper's report usually starts a new turn at once; wait for it before calling the manager done
+
+function finish(m) {
+  const e = m.ending; m.ending = null; clearTimeout(m.settle)
+  if (!e || m.status === 'stopped') return
+  m.result = e.text || m.result || ''
+  m.status = e.ok ? 'done' : 'failed'
+  m.ended = Date.now()
+  gtd.updateInstance(m.id, { status: m.status, ended: m.ended, ...(m.waitLabel ? { label: m.title } : {}) })
+  m.waitLabel = false
+  locks.releaseOwner(m.id, m.status === 'done' ? 'manager finished' : 'manager failed')
+  hooks.notify({ kind: m.status === 'done' ? 'finished' : 'failed', id: m.id, title: m.title, text: clip(m.result || e.subtype, 6000) })
+  clearTimeout(m.idle)
+  m.idle = setTimeout(() => close(m), IDLE_CLOSE_MS)
+  pump()
+}
+
+/** its turn ended (or a helper came or went) while helpers are still out: it stays working */
+function waitOnHelpers(m) {
+  clearTimeout(m.settle); clearTimeout(m.idle)
+  const names = [...m.bg.values()]
+  const label = clip(`waiting on ${names.length} helper${names.length === 1 ? '' : 's'}: ${names.join(', ')}`, 160)
+  const first = !m.waitLabel
+  m.waitLabel = true
+  gtd.updateInstance(m.id, { status: 'running', ended: null, label })
+  if (!first) return
+  const text = clip(`Still working, ${label}. ${m.ending?.text || ''}`, 400)
+  m.updates.push({ at: Date.now(), text }); if (m.updates.length > 40) m.updates.shift()
+  gtd.recordEvent(m.id, { k: 'note', text })
+  hooks.notify({ kind: 'update', id: m.id, title: m.title, text })
+}
+
+/** a new turn began, by a message or by the CLI on a helper's report */
+function wakeUp(m) {
+  m.turn = true; m.ending = null
+  clearTimeout(m.settle); clearTimeout(m.idle)
+  if (m.status === 'done' || m.status === 'failed') { m.status = 'working'; m.ended = null }
+  if (!gtd.hasInstance(m.id)) gtd.registerInstance({ iid: m.id, agent: m.id, name: m.title, color: '#7DA0FF', parent: 'petra', label: m.title, status: 'running', kind: 'manager' })
+  else gtd.updateInstance(m.id, { status: 'running', ended: null, ...(m.waitLabel ? { label: m.title } : {}) })
+  m.waitLabel = false
 }
 
 function close(m) {
@@ -315,18 +447,23 @@ function close(m) {
 function pump() {
   for (const m of managers.values()) {
     if (running() >= MAX_RUNNING) return
-    if (m.status === 'queued') run(m)
+    if (m.status !== 'queued') continue
+    if (m.clicky && clickyBusy()) continue           // one mouse: screen agents take turns
+    run(m)
   }
 }
 
-export function startManager(title, brief, official, tab) {
+export function startManager(title, brief, official, tab, opts = {}) {
   if (official?.length) locks.setOfficial(official, 'add')
   const id = 'mgr' + (++seq)
   try { writeFileSync(SEQ_FILE, String(seq)) } catch {}
-  const m = { id, title: clip(String(title || 'Manager').trim(), 60), brief: String(brief || '').trim(), status: 'queued',
-    created: Date.now(), started: null, ended: null, updates: [], inbox: [], result: null, tab: tab || null }   // tab: the Petra chat that started it
+  const clicky = !!opts.clicky
+  const m = { id, title: clip(String(title || (clicky ? 'screen agent' : 'Manager')).trim(), 60), brief: String(brief || '').trim(), status: 'queued',
+    created: Date.now(), started: null, ended: null, updates: [], inbox: [], result: null, tab: tab || null,   // tab: the Petra chat that started it
+    clicky, by: opts.by || null }                                                                             // by: the manager that started it, if any
   managers.set(id, m)
-  gtd.registerInstance({ iid: id, agent: id, name: m.title, color: '#7DA0FF', parent: 'petra', label: clip(m.brief, 160), status: 'queued', kind: 'manager' })
+  gtd.registerInstance({ iid: id, agent: id, name: (clicky ? 'Screen · ' : '') + m.title, color: clicky ? CLICKY_COLOR : '#7DA0FF',
+    parent: opts.by || 'petra', label: clip(m.brief, 160), status: 'queued', kind: clicky ? 'screen' : 'manager' })
   gtd.recordEvent(id, { k: 'prompt', text: m.brief })
   hooks.notify({ kind: 'started', id, title: m.title, text: clip(m.brief, 600) })
   pump()
@@ -387,6 +524,10 @@ export function petraServer(tab) {
       }, async ({ title, brief, official }) => {
         const r = startManager(title, brief, official, tab)
         return ok(`Started manager ${r.id} "${title}"${r.position ? `, queued (${r.position} waiting)` : ''}.${official?.length ? ' Official: ' + locks.snapshot().official.join(', ') : ''}`)
+      }),
+      tool('start_screen_agent', CLICKY_TOOL, clickyArgs, async ({ title, brief }) => {
+        const r = startManager(title, brief, null, tab, { clicky: true })
+        return ok(`Started screen agent ${r.id} "${title}"${r.position ? `, queued (${r.position} waiting)` : ''}. It reports back to you like a manager.`)
       }),
       tool('managers', 'Your managers: status, brief, their latest updates, and finished reports.', {}, async () => {
         const list = listManagers()

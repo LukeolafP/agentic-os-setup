@@ -26,7 +26,7 @@ give that one; otherwise give all three. You are read only: you never create, ed
 delete a note. Everything you find goes into your final report.
 
 ## Start from
-- `Brand/GTD update BG-2 (1).pdf`, the brand guideline. Read it in page ranges of up to
+- `Brand/GTD/GTD update BG-2 (1).pdf`, the brand guideline. Read it in page ranges of up to
   20 pages until you have read all of it.
 - The animate skill's design system, for motion rules, only if the brief asks about
   video or animation

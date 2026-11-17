@@ -1,8 +1,8 @@
 {
   "gtd-vault": {
     "status": "active",
-    "task": "<task-notification> <task-id>a73830e1f2eec8233</task-id> <tool-use-id>…",
-    "updatedAt": 1794523314509
+    "task": "get the github repo's all up to date",
+    "updatedAt": 1794947350504
   },
   "case-study-logos": {
     "status": "idle",
@@ -92,6 +92,6 @@
   "ring-organizer": {
     "status": "idle",
     "task": "session ended",
-    "updatedAt": 1794516576325
+    "updatedAt": 1794938858710
   }
 }

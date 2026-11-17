@@ -62,7 +62,7 @@
         <span class="ch-task"></span>
       </div>
     </header>
-    <nav class="ch-tabs"><div class="ct-list"></div><button class="ct-new" title="New chat tab">+</button></nav>
+    <nav class="ch-tabs"><div class="ct-list"></div><button class="ct-new" title="New project chat">+</button></nav>
     <div class="ch-subs"><span class="ch-lbl">SUBAGENTS</span><div class="ch-chips"></div></div>
     <div class="ch-bodies" aria-live="polite"></div>
     <div class="ch-subbody"></div>
@@ -288,14 +288,14 @@
   }
   function clearAll(t) {
     t.body.innerHTML = ''; t.tools.clear(); t.perms.clear(); t.live = null; t.liveText = '';
-    add('hello', `<b>Petra</b> · the whole of Claude Code, in your vault. Ask anything, run a skill with <code>/</code>, or hand work to an agent. Open more tabs with <b>+</b> to work on several things at once.`, t.body);
+    add('hello', `<b>Petra</b> · the whole of Claude Code, in your vault. Ask anything, run a skill with <code>/</code>, or hand work to an agent. Each tab is one project: <b>+</b> starts a new one and asks its name, and double-clicking a tab renames it.`, t.body);
   }
 
   /* ------------------------------------------------------------ tabs */
   function renderTabs() {
     tabList.innerHTML = order.map(id => {
       const t = T.get(id); if (!t) return '';
-      return `<div class="ct${t === cur ? ' on' : ''}${t.busy ? ' busy' : ''}${t.unread ? ' unread' : ''}${t.state ? ' st-' + t.state : ''}${full && split.length > 1 && split.includes(id) ? ' inpane' : ''}" data-id="${esc(id)}" draggable="true">
+      return `<div class="ct${t === cur ? ' on' : ''}${t.busy ? ' busy' : ''}${t.unread ? ' unread' : ''}${t.state ? ' st-' + t.state : ''}${full && split.length > 1 && split.includes(id) ? ' inpane' : ''}" data-id="${esc(id)}" draggable="true" title="${esc(t.about ? t.title + ' · ' + t.about : t.title)}">
         <i></i><span>${esc(t.title)}</span><button class="ct-x" data-x="${esc(id)}" title="Close this tab (the chat stays in history)">✕</button></div>`;
     }).join('');
     pane.classList.toggle('manyTabs', order.length > 1);
@@ -328,7 +328,7 @@
     split = split.filter(id => order.includes(id));
     if (focus && full && split.length && !split.includes(focus) && !T.get(focus)) { if (split.length < MAX_PANES()) split.push(focus); else if (cur) split[Math.max(0, split.indexOf(cur.id))] = focus; }
     saveSplit();
-    for (const x of list) { const t = makeTab(x.id); t.title = x.title || 'New chat'; t.busy = !!x.busy; t.state = x.state || ''; }
+    for (const x of list) { const t = makeTab(x.id); t.title = x.title || 'New project'; t.about = x.about || ''; t.busy = !!x.busy; t.state = x.state || ''; }
     for (const id of [...T.keys()]) if (!order.includes(id)) dropTab(id);
     let want = focus && T.get(focus) ? focus : cur && T.get(cur.id) ? cur.id : null;
     if (!want) { try { const saved = localStorage.getItem('os-chat-tab'); if (saved && T.get(saved)) want = saved; } catch {} }
@@ -381,7 +381,23 @@
   tabList.addEventListener('scroll', () => { if (tabList.matches(':hover')) requestAnimationFrame(peekAt); }, { passive: true });
   tabList.addEventListener('wheel', e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && tabList.scrollWidth > tabList.clientWidth) { e.preventDefault(); tabList.scrollLeft += e.deltaY; } }, { passive: false });
   addEventListener('resize', hidePeek);
-  $('.ct-new', pane).addEventListener('click', () => send({ type: 'chat-new-tab' }));
+  /* project names (17 Nov 2026): every tab is a project with a fixed name. + asks for the name
+     first, in a field in the tab row; double-clicking a tab renames it. Enter saves, Esc cancels. */
+  function nameField(initial, label, done) {
+    $('.ct-name', pane)?.remove();
+    const f = document.createElement('input');
+    f.className = 'ct-name'; f.placeholder = label; f.value = initial || ''; f.maxLength = 80; f.spellcheck = false;
+    $('.ch-tabs', pane).insertBefore(f, $('.ct-new', pane));
+    let closed = false;
+    const finish = ok => { if (closed) return; closed = true; const v = f.value.replace(/\s+/g, ' ').trim(); f.remove(); if (ok && v && v !== initial) done(v); };
+    f.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
+    f.addEventListener('blur', () => finish(true));
+    f.focus(); f.select();
+  }
+  function newProject() { setOpen(true); nameField('', 'Name the project, then Enter', name => send({ type: 'chat-new-tab', name })); }
+  function renameProject(id) { const t = T.get(id); if (!t) return; nameField(t.title, 'Rename the project', name => { t.title = name; renderTabs(); send({ type: 'chat-rename', tab: id, name }); }); }
+  tabList.addEventListener('dblclick', e => { const c = e.target.closest('.ct'); if (c && !e.target.closest('.ct-x')) { hidePeek(); renameProject(c.dataset.id); } });
+  $('.ct-new', pane).addEventListener('click', newProject);
 
   /* ------------------------------------------------------------ full screen and split */
   try { split = JSON.parse(localStorage.getItem('os-chat-split') || '[]'); } catch {}
@@ -529,7 +545,7 @@
     const m = e.detail;
     if (m.type === 'chat-tabs') syncTabs(m.tabs || []);
     else if (m.type === 'chat-history') {
-      if (m.tabs) { order = m.tabs.map(x => x.id); for (const x of m.tabs) { const tt = makeTab(x.id); tt.title = x.title || 'New chat'; } }
+      if (m.tabs) { order = m.tabs.map(x => x.id); for (const x of m.tabs) { const tt = makeTab(x.id); tt.title = x.title || 'New project'; tt.about = x.about || ''; } }
       if (!m.tab) return;
       const t = makeTab(m.tab);
       clearAll(t);
@@ -843,7 +859,7 @@
     const a = b.dataset.a;
     if (a === 'close') setOpen(false);
     else if (a === 'history') openHistory();
-    else if (a === 'new') send({ type: 'chat-new-tab' });
+    else if (a === 'new') newProject();
     else if (a === 'term') window.goTab && window.goTab('term');
     else if (a === 'full') setFull(!full);
     else if (a === 'voice') setVoice(!voiceOn);
@@ -976,7 +992,7 @@
     /* type a message for Luke to finish and send (a team member's CALL) */
     draft: text => { if (sub) closeSub(); setOpen(true); input.value = text; autosize(input); input.focus({ preventScroll: true }); input.setSelectionRange(text.length, text.length); },
     openSub, closeSub,
-    newTab: () => { setOpen(true); send({ type: 'chat-new-tab' }); },
+    newTab: name => { setOpen(true); if (name) send({ type: 'chat-new-tab', name }); else newProject(); },
     /* the little voice card's OPEN CHAT: bring what was just said, and keep talking here */
     openFromVoice(carry) {
       setOpen(true);

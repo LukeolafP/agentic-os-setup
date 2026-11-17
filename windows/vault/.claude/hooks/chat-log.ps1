@@ -52,7 +52,8 @@ if ($note) {
   Write-Output 'Update that note during this turn, per Memory/Automations/Chat Logging.md.'
 } else {
   Write-Output 'chat note: none yet for this session'
-  Write-Output 'Create it before other work, per Memory/Automations/Chat Logging.md. Its'
+  Write-Output 'Read Memory/Automations/Chat Logging.md once now (it is not preloaded), then create'
+  Write-Output 'the note before other work, per that automation. Its'
   Write-Output "frontmatter must carry: session: $sid"
 }
 # Petra's voice sessions (the JARVIS bridge sets GTD_VOICE=1): Luke is waiting in silence,

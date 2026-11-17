@@ -60,6 +60,130 @@
       "name": "Scorecard Tracker",
       "color": "#ff9100",
       "icon": "Crown"
+    },
+    {
+      "id": "bp-brand-checker",
+      "name": "Blueprint Brand Checker",
+      "color": "#ff3d71",
+      "icon": "Sentinel",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-graphic-designer",
+      "name": "Blueprint Graphic Designer",
+      "color": "#ff3d71",
+      "icon": "Spark",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-mockup-designer",
+      "name": "Blueprint Mockup Designer",
+      "color": "#ff3d71",
+      "icon": "Orb",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-page-builder",
+      "name": "Blueprint Page Builder",
+      "color": "#ff3d71",
+      "icon": "Fortress",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "bp-motion-designer",
+      "name": "Blueprint Motion Designer",
+      "color": "#ff3d71",
+      "icon": "Drift",
+      "team": "blueprint",
+      "teamRole": "member",
+      "lead": "bp-creative-director"
+    },
+    {
+      "id": "ac-brand-checker",
+      "name": "Alpha Carrier Brand Checker",
+      "color": "#ff3d71",
+      "icon": "Sentinel",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-graphic-designer",
+      "name": "Alpha Carrier Graphic Designer",
+      "color": "#ff3d71",
+      "icon": "Spark",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-mockup-designer",
+      "name": "Alpha Carrier Mockup Designer",
+      "color": "#ff3d71",
+      "icon": "Orb",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-page-builder",
+      "name": "Alpha Carrier Page Builder",
+      "color": "#ff3d71",
+      "icon": "Fortress",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "ac-motion-designer",
+      "name": "Alpha Carrier Motion Designer",
+      "color": "#ff3d71",
+      "icon": "Drift",
+      "team": "alpha-carrier",
+      "teamRole": "member",
+      "lead": "ac-creative-director"
+    },
+    {
+      "id": "bp-creative-director",
+      "name": "Blueprint Creative Director",
+      "color": "#ff3d71",
+      "icon": "Crown",
+      "team": "blueprint",
+      "teamRole": "lead"
+    },
+    {
+      "id": "ac-creative-director",
+      "name": "Alpha Carrier Creative Director",
+      "color": "#ff3d71",
+      "icon": "Crown",
+      "team": "alpha-carrier",
+      "teamRole": "lead"
+    },
+    {
+      "id": "ring-organizer",
+      "name": "Ring Organizer",
+      "color": "#00c853",
+      "icon": "Rune"
+    },
+    {
+      "id": "chrome-operator",
+      "name": "Chrome Operator",
+      "color": "#00c853",
+      "icon": "Drift"
+    },
+    {
+      "id": "image-viewer",
+      "name": "Image Viewer",
+      "color": "#00c853",
+      "icon": "Orb"
     }
   ]
 }

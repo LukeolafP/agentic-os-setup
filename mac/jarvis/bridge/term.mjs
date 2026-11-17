@@ -31,7 +31,7 @@ try {
   pty = require(join(PTY_DIR, 'node_modules', 'node-pty'))
   // npm drops the execute bit on node-pty's prebuilt helper, and without it every
   // spawn fails with "posix_spawnp failed"
-  for (const arch of ['darwin-arm64', 'darwin-x64']) {
+  for (const arch of ['darwin-arm64', 'darwin-x64', 'win32-x64', 'win32-arm64']) {        // the terminal tab needs a prebuilt node-pty; none on Windows yet
     const h = join(PTY_DIR, 'node_modules', 'node-pty', 'prebuilds', arch, 'spawn-helper')
     if (existsSync(h) && !(statSync(h).mode & 0o111)) chmodSync(h, 0o755)
   }

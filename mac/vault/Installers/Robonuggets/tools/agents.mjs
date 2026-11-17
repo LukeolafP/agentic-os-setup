@@ -60,7 +60,15 @@ function readAgent(id) {
     color, icon, model: fm.model || 'claude-opus-5-5', effort: fm.effort || 'high',
     skills: list(fm.tags).length ? list(fm.tags) : [fm.department || 'Agent'],
     permissions: list(fm.permissions),
+    ...teamOf(fm),
   }
+}
+/* agent teams (29 Oct 2026): team, team_role lead|member and a member's lead, copied onto
+   the dashboards so the console can group a team under its lead. Absent = no team (an
+   undefined key drops out of the JSON, so a re-register clears an old team). */
+function teamOf(fm) {
+  const r = String(fm.team_role || '').toLowerCase()
+  return { team: fm.team || undefined, teamRole: r === 'lead' || r === 'member' ? r : undefined, lead: fm.lead || undefined }
 }
 const load = f => JSON.parse(fs.readFileSync(f, 'utf8'))
 const save = (f, d) => fs.writeFileSync(f, JSON.stringify(d, null, 2) + '\n')
@@ -68,9 +76,10 @@ function upsert(arr, item) { const i = arr.findIndex(a => a.id === item.id); if 
 
 function register(id) {
   const a = readAgent(id)
-  const s = load(FILES.scaffold); const added = upsert(s.agents, { id, name: a.name, color: a.color, icon: a.icon }); save(FILES.scaffold, s)
-  const g = load(FILES.agents); upsert(g.agents, { id, name: a.name, role: a.description.slice(0, 140), color: a.color, icon: a.icon }); save(FILES.agents, g)
-  const t = load(FILES.team); upsert(t.agents, { id, name: a.name, role: `${a.role} · ${a.model.replace('claude-', '')} ${a.effort}`, description: a.description, skills: a.skills, icon: a.icon, color: a.color }); save(FILES.team, t)
+  const tm = { team: a.team, teamRole: a.teamRole, lead: a.lead }
+  const s = load(FILES.scaffold); const added = upsert(s.agents, { id, name: a.name, color: a.color, icon: a.icon, ...tm }); save(FILES.scaffold, s)
+  const g = load(FILES.agents); upsert(g.agents, { id, name: a.name, role: a.description.slice(0, 140), color: a.color, icon: a.icon, ...tm }); save(FILES.agents, g)
+  const t = load(FILES.team); upsert(t.agents, { id, name: a.name, role: `${a.role} · ${a.model.replace('claude-', '')} ${a.effort}`, description: a.description, skills: a.skills, icon: a.icon, color: a.color, ...tm }); save(FILES.team, t)
   console.log(`${added ? 'registered' : 'updated'} ${a.name} (${id}) on the Rubric console sidebar, Agents tab and Team tab.`)
   console.log('The OS and JARVIS read .claude/agents directly - it can be queued now.')
 }

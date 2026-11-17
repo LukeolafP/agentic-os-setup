@@ -8,9 +8,9 @@ Use `[[wiki links]]` between notes, not relative paths.
 Automations are standing instructions I have written down. Each one is its own note in
 `Memory/Automations/`.
 
-**At the start of every session, read every note in `Memory/Automations/`.**
-Then, throughout the conversation, watch for each automation's trigger and carry out
-its action without waiting to be asked. Automation notes are instructions to you, not
+**The session-start hook lists every active automation with its trigger.** Throughout the
+conversation, watch for each trigger. When one fires, read that note in full, once per
+session, and carry out its action without waiting to be asked. Automation notes are instructions to you, not
 reference material.
 
 Rules:
@@ -27,8 +27,12 @@ Rules:
 Three things, and nothing else:
 
 1. This file.
-2. Every note in `Memory/Automations/`, in full.
-3. [[00 Chat Index]], so you know what has already been worked on.
+2. A one-line trigger for each active automation in `Memory/Automations/`. The notes
+   themselves are read only when their trigger fires.
+3. The newest dozen chats from [[00 Chat Index]], so you know what was worked on lately.
+
+The hook that prints 2 and 3 must stay under about 9,000 characters. Claude Code cuts any
+larger hook output down to a 2 KB preview, and the automations are then never seen.
 
 Do not scan, list or read the rest of the vault at the start of a session. Everything
 else is read on demand, only when a question needs it.
@@ -76,7 +80,7 @@ Claude's own memory folder, so it shows up in Obsidian, the Second Brain map and
   value.
 
 Never read a folder in full to answer a question an index already answers, and never
-re-read an automation note that was already loaded at session start.
+re-read an automation note already read in this session.
 
 ## Index rules
 
@@ -104,6 +108,18 @@ ask. A new index gets a row in [[00 Master Index]] in the same turn it is create
 nothing will ever find it. Each index links up to its parent on the line under its title,
 so the chain reads in both directions. A level is created when the first note needs it,
 never in advance.
+
+## Pictures and Chrome
+
+A screenshot or photo stays in the session that looks at it and is re-read on every later
+step, so long sessions never hold pictures.
+
+- **Chrome work** goes to the [[chrome-operator]] subagent through the Agent tool, one page,
+  form or setting per call, carrying the tab id and progress forward from each text report.
+  The `media-guard.js` hook blocks Claude in Chrome tools in any main session.
+- **Photos sent to Petra** arrive as file paths, not images. Petra sends the
+  [[image-viewer]] subagent to look, or passes the paths to a manager or agent. The hook
+  blocks Petra from opening image files herself.
 
 ## Content structure
 

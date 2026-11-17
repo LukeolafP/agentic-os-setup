@@ -112,6 +112,11 @@ working at the same time on related pieces; you all coordinate through Petra.
   mcp__team__ask_petra. It waits for the answer. Use it sparingly.
 - To tell another manager something directly, mcp__team__message_manager (Petra sees it).
   Call mcp__team__check_messages between big steps; Petra may have passed something on.
+- Pictures stay out of your session, because each one is re-read on every later step. Do all
+  Chrome work through the Agent tool with subagent_type "chrome-operator": one call per page,
+  form or setting, carrying the tab id and progress forward from each text report. Claude in
+  Chrome tools are blocked in your own session. To look at photos or renders you did not
+  make, send "image-viewer" the paths and your question.
 - You have all of Claude Code: tools, skills, subagents, the vault and Luke's MCP servers.
   The vault's CLAUDE.md rules apply, except Chat Logging: Petra keeps the chat note, never
   you.
@@ -211,7 +216,13 @@ function teamServer(selfId) {
       })]),
       tool('team_board', 'Every manager Petra is running: title, status, brief and latest updates. Read it before planning so your work fits the others.', {}, async () => {
         const list = listManagers()
-        return ok((list.map((x) => `${x.id === selfId ? '(you) ' : ''}${x.id} · ${x.title} · ${x.status}\n  brief: ${clip(x.brief, 500)}${x.updates.length ? '\n  updates:\n' + x.updates.map((u) => `   - ${clip(u.text, 400)}`).join('\n') : ''}${x.result ? '\n  finished: ' + clip(x.result, 600) : ''}`).join('\n\n') || 'No managers.') + '\n\n' + locks.describe())
+        /* GTD 16 Nov 2026 (Token Burn Audit): finished managers stay on the board until a new
+           chat, and each printed its brief, five updates and report, so every call grew with
+           the day's work (15,000 characters on average). Finished ones are now one line. */
+        const ended = (x) => x.status === 'done' || x.status === 'failed' || x.status === 'stopped'
+        return ok((list.map((x) => ended(x) && x.id !== selfId
+          ? `${x.id} · ${x.title} · ${x.status}${x.result ? ': ' + clip(String(x.result).replace(/\s+/g, ' '), 200) : ''}`
+          : `${x.id === selfId ? '(you) ' : ''}${x.id} · ${x.title} · ${x.status}\n  brief: ${clip(x.brief, 500)}${x.updates.length ? '\n  updates:\n' + x.updates.map((u) => `   - ${clip(u.text, 400)}`).join('\n') : ''}${x.result ? '\n  finished: ' + clip(x.result, 600) : ''}`).join('\n\n') || 'No managers.') + '\n\n' + locks.describe())
       }),
       tool('claim_file', 'Claim files before you change them: an official file, several files that change together (a page and its css), or a folder. Waits in a queue until they are free (up to 15 minutes), granted all at once. Draft first in your own .work/<your id>/ folder; claim only when ready to merge.', {
         path: z.union([z.string(), z.array(z.string()).min(1)]).describe('A vault path, or a list of them claimed together. Absolute or relative to the vault.'),
